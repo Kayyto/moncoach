@@ -115,6 +115,10 @@ export default {
 
       if (p.startsWith('/photos/') && req.method === 'GET') return await handlePhoto(req, env, p.slice('/photos/'.length));
 
+      if (p.startsWith('/api/carnet-proxy/') && (req.method === 'GET' || req.method === 'PUT')) {
+        return await handleCarnetProxy(req, env, decodeURIComponent(p.slice('/api/carnet-proxy/'.length)));
+      }
+
       return env.ASSETS.fetch(req);
     } catch (err) {
       console.error('MonCoach — erreur serveur', err);
@@ -267,8 +271,10 @@ async function handleDeleteRecipe(req, env, id) {
 }
 
 async function handleGetOverrides(req, env) {
-  const user = await getUtilisateurCourant(req, env);
-  const unauth = requireAuth(user); if (unauth) return unauth;
+  // Lecture publique (pas besoin d'être connecté) : les corrections de
+  // recettes profitent à tout le monde, y compris avant connexion au groupe —
+  // comme en lecture Firestore côté app d'origine. L'écriture reste réservée
+  // à l'administrateur (voir handlePutOverride).
   const { results } = await env.DB.prepare('SELECT name, data FROM recipe_overrides').all();
   const overrides = {};
   for (const r of results) overrides[r.name] = JSON.parse(r.data);
@@ -311,4 +317,26 @@ async function handlePhoto(req, env, key) {
       'Cache-Control': 'public, max-age=31536000, immutable',
     },
   });
+}
+
+// Petit relais côté serveur vers l'app "Carnet" (liste.kayto.org), utilisé par
+// l'envoi de la liste de courses depuis MonCoach. Un fetch direct depuis le
+// navigateur serait bloqué par CORS (liste.kayto.org ne renvoie pas
+// Access-Control-Allow-Origin) ; en passant par notre propre Worker (même
+// origine que la page), aucun en-tête CORS n'est nécessaire.
+async function handleCarnetProxy(req, env, code) {
+  if (!code) return json({ error: 'Code manquant' }, { status: 400 });
+  const target = `https://liste.kayto.org/api/carnet/${encodeURIComponent(code)}`;
+  try {
+    const init = { method: req.method, headers: { 'Content-Type': 'application/json' } };
+    if (req.method === 'PUT') init.body = await req.text();
+    const upstream = await fetch(target, init);
+    const text = await upstream.text();
+    return new Response(text, {
+      status: upstream.status,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (err) {
+    return json({ error: 'Carnet injoignable pour le moment' }, { status: 502 });
+  }
 }
