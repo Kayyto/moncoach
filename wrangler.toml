@@ -1,0 +1,16 @@
+name = "moncoach"
+main = "src/worker.js"
+compatibility_date = "2026-09-01"
+
+[assets]
+directory = "public"
+binding = "ASSETS"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "moncoach"
+database_id = "8c238841-f934-4b4d-a8e4-0d1bbac6527a"
+
+[[r2_buckets]]
+binding = "PHOTOS"
+bucket_name = "moncoach-photos"
