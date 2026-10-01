@@ -387,6 +387,22 @@
   .img-lightbox-img{width:100%;height:auto;max-height:84vh;object-fit:contain;border-radius:14px;background:#fff;box-shadow:0 12px 40px rgba(0,0,0,.35);cursor:default;}
   .img-lightbox-label{color:#fff;font-weight:700;font-size:.95rem;text-align:center;}
   .img-lightbox-close{position:absolute;top:-14px;right:-14px;width:34px;height:34px;border-radius:50%;background:#fff;color:var(--page);border:none;font-size:1.1rem;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;}
+  /* Bouton "Voir la vidéo" : visible uniquement sur les exercices/étirements
+     pour lesquels une vidéo YouTube de démonstration a été trouvée (voir
+     data-videos.js) ; les autres gardent juste leur icône SVG, sans bouton. */
+  .watch-video-btn{display:inline-flex;align-items:center;gap:6px;margin-top:8px;padding:7px 14px;border-radius:999px;border:1px solid var(--accent);background:var(--accent-tint);color:var(--accent-text);font-weight:700;font-size:.82rem;cursor:pointer;font-family:inherit;}
+  .watch-video-btn:hover{background:var(--accent);color:var(--on-accent);}
+  .stretch-info .watch-video-btn{margin-top:8px;}
+  /* Modale vidéo (même principe que .img-lightbox : overlay plein écran,
+     fermeture au clic dehors / Échap / bouton ✕) mais avec un cadre 16:9 pour
+     l'iframe YouTube au lieu d'une image. */
+  .video-modal{display:none;position:fixed;inset:0;background:rgba(15,23,42,.88);z-index:9999;align-items:center;justify-content:center;padding:24px;}
+  .video-modal.open{display:flex;}
+  .video-modal-inner{position:relative;width:min(94vw,900px);display:flex;flex-direction:column;align-items:center;gap:10px;}
+  .video-modal-frame-wrap{width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:#000;box-shadow:0 12px 40px rgba(0,0,0,.35);}
+  .video-modal-frame-wrap iframe{width:100%;height:100%;border:0;display:block;}
+  .video-modal-label{color:#fff;font-weight:700;font-size:.95rem;text-align:center;}
+  .video-modal-close{position:absolute;top:-14px;right:-14px;width:34px;height:34px;border-radius:50%;background:#fff;color:var(--page);border:none;font-size:1.1rem;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.25);display:flex;align-items:center;justify-content:center;}
   .circuit-timer{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:var(--accent-tint);border:1px solid var(--gridline);border-radius:10px;padding:10px 12px;margin:8px 0 4px;}
   .circuit-display{display:flex;align-items:center;gap:10px;}
   .circuit-phase{font-weight:800;font-size:.85rem;color:var(--accent-text);min-width:70px;}
@@ -1326,6 +1342,16 @@
   </div>
 </div>
 
+<div class="video-modal" id="videoModal" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="video-modal-inner">
+    <button type="button" class="video-modal-close" id="videoModalClose" aria-label="Fermer">✕</button>
+    <div class="video-modal-frame-wrap">
+      <iframe id="videoModalFrame" src="" title="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+    </div>
+    <div class="video-modal-label" id="videoModalLabel"></div>
+  </div>
+</div>
+
 <div class="day-modal" id="dayDetailModal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="dayDetailTitle">
   <div class="day-modal-inner">
     <button type="button" class="day-modal-close" id="dayDetailClose" aria-label="Fermer">✕</button>
@@ -1336,6 +1362,7 @@
 </div>
 
 <script src="data-core.js"></script>
+<script src="data-videos.js"></script>
 <script src="data-recipes-part1.js"></script>
 <script src="data-recipes-part2.js"></script>
 <script src="data-recipes-part3.js"></script>
@@ -2038,6 +2065,7 @@ function renderWorkout(program, goal, level, days, targetZones){
         <div class="exo-expand">
           <div class="exo-icon-big">${media.big}</div>
           <div class="exo-expand-label">${e.n}</div>
+          ${youtubeWatchBtnHtml(e.photoKey || e.n)}
         </div>
       </div>`;
     }).join('');
@@ -2290,6 +2318,51 @@ imgLightbox.addEventListener('click', (ev)=>{
 imgLightboxClose.addEventListener('click', closeImgLightbox);
 document.addEventListener('keydown', (ev)=>{
   if(ev.key === 'Escape' && imgLightbox.classList.contains('open')){ closeImgLightbox(); }
+});
+
+// Bouton "▶ Voir la vidéo" sur un exercice/étirement (voir EXERCISE_VIDEOS /
+// STRETCH_VIDEOS dans data-videos.js) : ouvre une démonstration YouTube dans
+// une modale, sans quitter l'appli. Couverture volontairement partielle pour
+// l'instant (liste de démarrage) — les exercices sans vidéo n'affichent pas
+// ce bouton et gardent juste leur icône.
+const videoModal = document.getElementById('videoModal');
+const videoModalFrame = document.getElementById('videoModalFrame');
+const videoModalLabel = document.getElementById('videoModalLabel');
+const videoModalClose = document.getElementById('videoModalClose');
+let lastVideoModalTrigger = null;
+
+function youtubeWatchBtnHtml(name){
+  const id = EXERCISE_VIDEOS[name] || STRETCH_VIDEOS[name];
+  if(!id) return '';
+  return `<button type="button" class="watch-video-btn" data-video-id="${id}" data-video-label="${escapeAttr(name)}">▶ Voir la vidéo</button>`;
+}
+function openVideoModal(videoId, label, triggerEl){
+  videoModalFrame.src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?autoplay=1&rel=0`;
+  videoModalFrame.title = label || 'Vidéo de démonstration';
+  videoModalLabel.textContent = label || '';
+  videoModal.classList.add('open');
+  videoModal.setAttribute('aria-hidden', 'false');
+  lastVideoModalTrigger = triggerEl || null;
+  videoModalClose.focus();
+}
+function closeVideoModal(){
+  videoModal.classList.remove('open');
+  videoModal.setAttribute('aria-hidden', 'true');
+  videoModalFrame.src = ''; // stoppe la lecture à la fermeture
+  if(lastVideoModalTrigger && typeof lastVideoModalTrigger.focus === 'function'){ lastVideoModalTrigger.focus(); }
+  lastVideoModalTrigger = null;
+}
+videoModal.addEventListener('click', (ev)=>{
+  if(ev.target === videoModal){ closeVideoModal(); }
+});
+videoModalClose.addEventListener('click', closeVideoModal);
+document.addEventListener('keydown', (ev)=>{
+  if(ev.key === 'Escape' && videoModal.classList.contains('open')){ closeVideoModal(); }
+});
+document.addEventListener('click', (ev)=>{
+  const btn = ev.target.closest('.watch-video-btn');
+  if(!btn) return;
+  openVideoModal(btn.dataset.videoId, btn.dataset.videoLabel, btn);
 });
 
 // Cliquer sur un jour du calendrier ("Calendrier des séances & repas") ouvre
@@ -2659,6 +2732,7 @@ function renderStretchTab(){
       <div class="stretch-info">
         <div class="stretch-name">${safeName}</div>
         <div class="stretch-duration">⏱ ${escapeAttr(s.duration)}</div>
+        ${youtubeWatchBtnHtml(s.n)}
       </div>
     </div>`;
   }).join('');
