@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MonCoach — Programme Sport &amp; Nutrition</title>
+<style>
+  :root{ --bg:#0f1220; --card:#171b2e; --trait:#2a2f45; --text:#eef0f8; --muted:#9aa1bd; --accent:#ff7a45; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--text); }
+  .wrap{ max-width:420px; margin:0 auto; padding:48px 20px; min-height:100vh; display:flex; flex-direction:column; justify-content:center; }
+  h1{ font-size:1.6rem; margin:0 0 4px; }
+  p.sub{ color:var(--muted); margin:0 0 28px; }
+  .card{ background:var(--card); border:1px solid var(--trait); border-radius:14px; padding:24px; }
+  label{ display:block; font-size:.85rem; color:var(--muted); margin:14px 0 6px; }
+  input{ width:100%; background:#10131f; border:1px solid var(--trait); color:var(--text); border-radius:10px; padding:11px 12px; font-size:1rem; }
+  button{ width:100%; margin-top:20px; background:var(--accent); color:#1a0e08; border:none; border-radius:10px; padding:12px; font-size:1rem; font-weight:700; cursor:pointer; }
+  button:disabled{ opacity:.6; cursor:default; }
+  .switch{ text-align:center; margin-top:16px; color:var(--muted); font-size:.9rem; }
+  .switch a{ color:var(--accent); cursor:pointer; text-decoration:none; }
+  .err{ color:#ff6b6b; font-size:.88rem; margin-top:10px; min-height:1.2em; }
+  .dash{ display:none; }
+  .dash h2{ margin-top:0; }
+  .leaderboard{ display:flex; flex-direction:column; gap:8px; margin:16px 0; }
+  .row{ display:flex; justify-content:space-between; background:#10131f; border:1px solid var(--trait); border-radius:10px; padding:10px 14px; }
+  .row.me{ border-color:var(--accent); }
+  .flame{ color:var(--accent); font-weight:700; }
+  .logout{ background:transparent; border:1px solid var(--trait); color:var(--muted); margin-top:28px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div id="authView" class="card">
+    <h1>MonCoach</h1>
+    <p class="sub" id="authSub">Connecte-toi pour retrouver ton programme.</p>
+    <form id="authForm">
+      <label for="fName">Prénom</label>
+      <input id="fName" name="name" autocomplete="username" required>
+      <label for="fPass">Mot de passe</label>
+      <input id="fPass" name="password" type="password" autocomplete="current-password" required>
+      <button type="submit" id="authSubmit">Se connecter</button>
+      <div class="err" id="authErr"></div>
+    </form>
+    <div class="switch">
+      <span id="switchText">Pas encore de compte ?</span> <a id="switchLink">Créer un compte</a>
+    </div>
+  </div>
+
+  <div id="dashView" class="dash">
+    <h2>Salut <span id="whoName"></span> 👋</h2>
+    <p class="sub">Mon Coach version Cloudflare arrive ici, fonctionnalité par fonctionnalité. Le classement du groupe fonctionne déjà :</p>
+    <div class="card">
+      <strong>Série du groupe</strong>
+      <div class="leaderboard" id="leaderboard"></div>
+    </div>
+    <button class="logout" id="logoutBtn">Se déconnecter</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  const authView = document.getElementById('authView');
+  const dashView = document.getElementById('dashView');
+  const form = document.getElementById('authForm');
+  const err = document.getElementById('authErr');
+  const switchLink = document.getElementById('switchLink');
+  const switchText = document.getElementById('switchText');
+  const authSub = document.getElementById('authSub');
+  const authSubmit = document.getElementById('authSubmit');
+  let mode = 'login';
+
+  function setMode(m){
+    mode = m;
+    err.textContent = '';
+    if(m === 'login'){
+      authSub.textContent = 'Connecte-toi pour retrouver ton programme.';
+      authSubmit.textContent = 'Se connecter';
+      switchText.textContent = 'Pas encore de compte ?';
+      switchLink.textContent = 'Créer un compte';
+    } else {
+      authSub.textContent = 'Choisis un prénom et un mot de passe pour rejoindre le groupe.';
+      authSubmit.textContent = 'Créer mon compte';
+      switchText.textContent = 'Déjà un compte ?';
+      switchLink.textContent = 'Se connecter';
+    }
+  }
+  switchLink.addEventListener('click', () => setMode(mode === 'login' ? 'signup' : 'login'));
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    err.textContent = '';
+    authSubmit.disabled = true;
+    const name = document.getElementById('fName').value.trim();
+    const password = document.getElementById('fPass').value;
+    try{
+      const res = await fetch(`/api/auth/${mode === 'login' ? 'login' : 'signup'}`, {
+        method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({name, password})
+      });
+      const data = await res.json();
+      if(!res.ok){ err.textContent = data.error || 'Erreur'; return; }
+      await afterAuth(data);
+    } catch(e2){
+      err.textContent = 'Erreur réseau';
+    } finally {
+      authSubmit.disabled = false;
+    }
+  });
+
+  document.getElementById('logoutBtn').addEventListener('click', async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    location.reload();
+  });
+
+  async function afterAuth(user){
+    authView.style.display = 'none';
+    dashView.style.display = 'block';
+    document.getElementById('whoName').textContent = user.name;
+    await loadGroup();
+  }
+
+  async function loadGroup(){
+    const res = await fetch('/api/group');
+    if(!res.ok) return;
+    const { members, streaks } = await res.json();
+    const me = await (await fetch('/api/me')).json();
+    const rows = members.map(m => ({
+      name: m.name,
+      uid: m.uid,
+      streak: (streaks[m.uid] && streaks[m.uid].count) || 0,
+    })).sort((a,b) => b.streak - a.streak || a.name.localeCompare(b.name,'fr'));
+    const wrap = document.getElementById('leaderboard');
+    wrap.innerHTML = rows.map(r => `
+      <div class="row${me.user && r.uid === me.user.uid ? ' me' : ''}">
+        <span>${r.name}${me.user && r.uid === me.user.uid ? ' (toi)' : ''}</span>
+        <span class="flame">🔥 ${r.streak}</span>
+      </div>`).join('') || '<p class="sub">Personne dans le groupe pour l\'instant.</p>';
+  }
+
+  (async function init(){
+    const res = await fetch('/api/me');
+    const data = await res.json();
+    if(data.user){ await afterAuth(data.user); }
+  })();
+})();
+</script>
+</body>
+</html>
