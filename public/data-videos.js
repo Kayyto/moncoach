@@ -1,11 +1,11 @@
 // Mon Coach — vidéos YouTube de démonstration.
 //
 // Couverture volontairement partielle : seuls certains exercices/étirements
-// ont une vidéo pour l'instant (242 exercices + 40 étirements). Les autres
+// ont une vidéo pour l'instant (242 exercices + 49 étirements — couverture des étirements complète). Les autres
 // continuent d'afficher leur icône SVG (ICONS, dans data-core.js) sans
 // bouton vidéo — c'est un comportement normal, pas une erreur. La
-// couverture sera étendue progressivement (prochain lot : reste de la base
-// élargie, puis étirements de niche restants).
+// couverture sera étendue progressivement sur le reste de la base
+// élargie (environ 618 exercices restants).
 //
 // Clé = nom exact de l'exercice/étirement (champ "n" dans EXERCISES/
 // STRETCHES, data-core.js). Valeur = identifiant de vidéo YouTube (11
@@ -302,4 +302,13 @@ const STRETCH_VIDEOS = {
   "Étirement des quadriceps allongé sur le dos": "gVuOj2Au5S8",
   "Étirement des quadriceps debout, jambe surélevée": "MF88t--IWoc",
   "Étirement des triceps sur le côté": "FdlvN9_Kxk4",
+  "Étirement du danseur": "aAgvS7xDvN0",
+  "Étirement de la colonne vertébrale": "SYLzTaOlKns",
+  "Étirement vers le haut": "RY8hWUe538Y",
+  "Étirement de l'aine (niveau intermédiaire)": "2rgZJWE9NKo",
+  "Étirement des péroniers": "VCnyiyubF4Y",
+  "Étirement du tibial postérieur": "cygQW9nSsDE",
+  "Étirement du soléaire et du tendon d'Achille debout": "bzYKMzD7Ju0",
+  "Étirement du fléchisseur de hanche et des quadriceps (niveau intermédiaire)": "vp2oIc890eU",
+  "Étirement 'Iron Cross' (rotation du tronc au sol)": "Wy2JaVOWefE",
 };
