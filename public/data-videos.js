@@ -1,10 +1,11 @@
-// Mon Coach — vidéos YouTube de démonstration (liste de démarrage).
+// Mon Coach — vidéos YouTube de démonstration.
 //
-// Couverture volontairement partielle : seuls les exercices/étirements les
-// plus courants ont une vidéo pour l'instant (environ 45 au total). Les
-// autres continuent d'afficher leur icône SVG (ICONS, dans data-core.js)
-// sans bouton vidéo — c'est un comportement normal, pas une erreur. La
-// couverture sera étendue progressivement.
+// Couverture volontairement partielle : seuls certains exercices/étirements
+// ont une vidéo pour l'instant (34 exercices + 40 étirements). Les autres
+// continuent d'afficher leur icône SVG (ICONS, dans data-core.js) sans
+// bouton vidéo — c'est un comportement normal, pas une erreur. La
+// couverture sera étendue progressivement (prochain lot : étirements
+// restants, puis exercices de la base élargie).
 //
 // Clé = nom exact de l'exercice/étirement (champ "n" dans EXERCISES/
 // STRETCHES, data-core.js). Valeur = identifiant de vidéo YouTube (11
@@ -63,4 +64,34 @@ const STRETCH_VIDEOS = {
   "Étirement des biceps debout": "3bN9i7j_xTU",
   "Étirement des triceps": "bgqcmGxFycc",
   "Étirement complet 'World's Greatest Stretch'": "V_iRWxBzh-k",
+  "Étirement au-dessus de la tête": "_JGWt2BDCl4",
+  "Étirement au-dessus de la tête assis": "aJBEW7a4ADc",
+  "Étirement latéral debout": "LIhQaEDyY6Q",
+  "Étirement de la bandelette ilio-tibiale et du fessier": "MO2ZNz03YEI",
+  "Étirement de l'aine et du dos": "NAPOfCnC294",
+  "Étirement de l'aine allongé sur le côté": "RS7_qfhRZ6c",
+  "Étirement de l'avant-bras à genoux": "sUEBYCv3OZY",
+  "Étirement dynamique du dos": "PGDnZ-sCC_o",
+  "Étirement au sol allongé sur le côté": "Cf3I4EKLcOg",
+  "Étirement du milieu du dos": "86BU0Be0Y24",
+  "Étirement du haut du dos": "nMqlUEK1iis",
+  "Étirement du haut du corps sur chaise": "uhRv-nq2_2M",
+  "Étirement de l'épaule en cercle ('Round the World')": "klSShZ8WoPI",
+  "Étirement de la jambe tendue sur chaise": "W9d98XmJJ1Y",
+  "Étirement des ischio-jambiers jambe levée": "Il1L75v6gq0",
+  "Étirement du coureur": "yqgsm8wzcJw",
+  "Étirement des ischio-jambiers assis au sol": "oJX8EKF3TqM",
+  "Étirement des ischio-jambiers et du mollet assis": "iPD_nUSdJ6o",
+  "Étirement des ischio-jambiers et du mollet debout": "0r3qQUDArc8",
+  "Étirement du mollet, coudes contre le mur": "6TgRW81LWjs",
+  "Étirement du mollet, mains contre le mur": "pqewvQ9HJP0",
+  "Étirement du mollet assis": "0YPe1-ml4NE",
+  "Étirement des pectoraux et de l'avant de l'épaule": "Dmm8_S23I74",
+  "Étirement des pectoraux sur ballon de stabilité": "kG9-5b1u1Qg",
+  "Étirement dynamique des pectoraux": "u7AFpzWV2I8",
+  "Étirement des quadriceps à quatre pattes": "sTX73bpw0w0",
+  "Étirement des quadriceps sur le côté": "uRRwljV-Nlk",
+  "Étirement des quadriceps allongé sur le dos": "gVuOj2Au5S8",
+  "Étirement des quadriceps debout, jambe surélevée": "MF88t--IWoc",
+  "Étirement des triceps sur le côté": "FdlvN9_Kxk4",
 };
