@@ -1,11 +1,11 @@
 // Mon Coach — vidéos YouTube de démonstration.
 //
 // Couverture volontairement partielle : seuls certains exercices/étirements
-// ont une vidéo pour l'instant 841 exercices + 49 étirements — couverture des étirements complète). Les autres
+// ont une vidéo pour l'instant 855 exercices + 49 étirements — couverture des étirements complète). Les autres
 // continuent d'afficher leur icône SVG (ICONS, dans data-core.js) sans
 // bouton vidéo — c'est un comportement normal, pas une erreur. La
 // couverture sera étendue progressivement sur le reste de la base
-// élargie (environ 23 exercices restants).
+// élargie (environ 9 exercices restants).
 //
 // Clé = nom exact de l'exercice/étirement (champ "n" dans EXERCISES/
 // STRETCHES, data-core.js). Valeur = identifiant de vidéo YouTube (11
@@ -858,6 +858,20 @@ const EXERCISE_VIDEOS = {
   "Saut croisé (jumping jack)": "Q4QnlZs9PqI",
   "Course/marche en sentier (trail)": "uoVlSPvBMaA",
   "Marche (tapis de course)": "8i3Vrd95o2k",
+  "Spellcaster (kettlebell)": "0FVVkA3d1W0",
+  "Développé épaules à la poulie": "_yu4vbZV_4Q",
+  "Crucifix": "3xgqwL1-EH8",
+  "Élévation haltères": "q_DYeb_daeY",
+  "Lever turc, style squat (kettlebell)": "Sw5f1PmsnSY",
+  "Écarté arrière avec rotation externe": "xLKQB7r-bec",
+  "Développé épaules assis (poulie)": "oCurHTuxfyY",
+  "Tirage latéral au poignet": "2Qp7gN_AxLw",
+  "Élévation à un haltère": "dbI3_c4iVEQ",
+  "Poussée pectorale (réponses multiples)": "CIykDiF4sfg",
+  "Poussée pectorale (réponse unique)": "jrBo8-VSR9M",
+  "Poussée avec chute": "vs-0Ei4_pf8",
+  "Essuie-glace isométrique": "aOI94HxRN1U",
+  "Extension triceps (poignée à chaîne)": "4MQNNMS46gU",
 };
 
 const STRETCH_VIDEOS = {
