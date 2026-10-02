@@ -1,11 +1,11 @@
 // Mon Coach — vidéos YouTube de démonstration.
 //
 // Couverture volontairement partielle : seuls certains exercices/étirements
-// ont une vidéo pour l'instant 765 exercices + 49 étirements — couverture des étirements complète). Les autres
+// ont une vidéo pour l'instant 841 exercices + 49 étirements — couverture des étirements complète). Les autres
 // continuent d'afficher leur icône SVG (ICONS, dans data-core.js) sans
 // bouton vidéo — c'est un comportement normal, pas une erreur. La
 // couverture sera étendue progressivement sur le reste de la base
-// élargie (environ 99 exercices restants).
+// élargie (environ 23 exercices restants).
 //
 // Clé = nom exact de l'exercice/étirement (champ "n" dans EXERCISES/
 // STRETCHES, data-core.js). Valeur = identifiant de vidéo YouTube (11
@@ -782,6 +782,82 @@ const EXERCISE_VIDEOS = {
   "Squat prise large (barre)": "PiHwH3I7Uh8",
   "Marche au joug (yoke)": "vUlN6Hz0vv0",
   "Squat Zercher": "zE2xqVQJr6w",
+  "Skipping rapide": "m9MccH7mWO0",
+  "Squat Frankenstein": "8C4sf6yEWYU",
+  "Squat sauté à mains libres": "l_CUr6SNT9g",
+  "Sauts de grenouille": "Brkz-7w8gsY",
+  "Squat avant barre": "m4fRvg6GKJ4",
+  "Squat avant barre sur banc": "zFYqvFAx0Xg",
+  "Sauts de plots (ou de haies)": "J3gEHtnqBkU",
+  "Squat avant (prise d'épaulé)": "rxEUC1LtgtI",
+  "Squats avant avec deux kettlebells": "6XghYOzny8U",
+  "Squat goblet": "8WUe1MNvN8Y",
+  "Squat hack (machine)": "hglQExHCM9Q",
+  "Épaulé suspendu": "uUeV3LwisDI",
+  "Épaulé suspendu sous les genoux": "eJpl0FqYKeM",
+  "Équilibre à l'arraché (poussée)": "HUKdl2jWm_0",
+  "Flexion de hanche avec élastique": "M2FeFK4ejtQ",
+  "Squat Jefferson": "VzQhgHPoi4s",
+  "Squat de jerk (flexion)": "2eu_TTpkPN8",
+  "Jogging sur tapis de course": "5PjFRBEAM8I",
+  "Squat pistol avec kettlebell": "RT_rgYWjU1g",
+  "Étirement du fléchisseur de hanche à genoux": "KT0HlPGCl6k",
+  "Extension des jambes (machine)": "MXvSzXEBOTI",
+  "Soulevé de terre à la machine (levier)": "ehCuEaTusEc",
+  "Saut en profondeur linéaire": "GeN0S3XCZnM",
+  "Regard vers le plafond": "gqp0d3r_fZI",
+  "Sprint en fentes": "KnRv_FRfMEk",
+  "Squat couché (machine)": "QQEW__B5y9I",
+  "Étirement des quadriceps allongé sur le ventre": "o8koZwLBI8g",
+  "Squat hack pieds serrés": "v9sc-Dv_bG4",
+  "Presse à cuisses pieds serrés": "sK5F0mG94bY",
+  "Squats pieds serrés": "gW6H_3waDno",
+  "Squat olympique": "FoJ-uxBxyKU",
+  "Demi-sauterelle": "F16nHvGbsiw",
+  "Squat barre à une jambe": "JlTojfaAXBo",
+  "Squat à un bras au-dessus de la tête (kettlebell)": "XVw9jVEXEiM",
+  "Soulevé de terre latéral à un bras": "bVwh5Kgh4WM",
+  "Squat overhead": "zBSngSVKOOI",
+  "Squat plié avec haltère": "Y-mIOYEdkWw",
+  "Jerk en puissance": "Ir_34nxrk1Q",
+  "Arraché puissance depuis blocs": "pvQhk2-3CTo",
+  "Saut rapide": "Oy4GBFpMYtM"
+"Élévation de jambe arrière": "-IxsbGuqD2w",
+  "Vélo couché": "ckJRUKyJ8cI",
+  "Squat box avec bandes inversées": "9wHlvAilKAI",
+  "Squat de force avec bandes inversées": "2M_96-qIGC4",
+  "Saut fusée": "reIlIgOKowA",
+  "Rameur stationnaire": "YcaUkUmUU_k",
+  "Course sur tapis de course": "aKfJJ1TuyE4",
+  "Chargement de sac de sable": "vgY3shLysWQ",
+  "Saut ciseaux": "HFCOHgvpEwQ",
+  "Saut latéral-sprint": "x1Vfq4fnXsY",
+  "Saut en longueur latéral debout": "mtei2dc-8jY",
+  "Déplacement latéral sur caisson": "hr7dOkNBSxQ",
+  "Talon-fesse à une jambe": "GsiXDeRdpeM",
+  "Poussée à une jambe": "x4vaHXRfKrg",
+  "Exercice de sprint avec un plot": "YtuKBIAD9IY",
+  "Squat box haut à une jambe": "3HCztPN3aSk",
+  "Progression de saut à une jambe": "vCgH-k7dJJQ",
+  "Saut latéral à une jambe": "gXgeOfJqJWU",
+  "Extension de jambe à une jambe (machine)": "82IuSLk5zNc",
+  "Saut en fente à une jambe": "UawJDKPS9io",
+  "Squats assis": "rA3y8CDrCbg",
+  "Patinage": "EkESodXYDRM",
+  "Traction de traîneau avec harnais": "sBSPsRuxnt8",
+  "Squat pistol (Smith machine)": "pvdthsmKWio",
+  "Arraché depuis blocs": "hWLOXxFDz9o",
+  "Squats en vitesse": "1Kn38Pl8MR0",
+  "Saut en fente": "FyxFYIV8wKU",
+  "Jerk en squat": "qkxtKv5cKKY",
+  "Squat avec chaînes": "HNJgF6dOBbc",
+  "Squat avec disques glissants": "TeqPT4xuVcM",
+  "Squats avec bandes": "5l8bDoRIyxc",
+  "Saut en longueur debout": "1dp6Xjx99RM",
+  "Step mill (machine)": "6eMPlQ95gXI",
+  "Saut croisé (jumping jack)": "Q4QnlZs9PqI",
+  "Course/marche en sentier (trail)": "uoVlSPvBMaA",
+  "Marche (tapis de course)": "8i3Vrd95o2k",
 };
 
 const STRETCH_VIDEOS = {
