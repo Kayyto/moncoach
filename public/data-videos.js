@@ -328,10 +328,6 @@ const EXERCISE_VIDEOS = {
   "Développé couché barre prise large": "lTu5YGNA7yY",
   "Développé couché décliné barre prise large": "ijIAoDfJXoA",
   "Pull-over décliné barre prise large": "j0rpLoeXRwY",
-};
-
-const STRETCH_VIDEOS = {
-  "Étirement des ischio-jambiers": "wEuAv8wOPVo",
   "Élévations frontales": "dCvPFIxG5Oc",
   "Développé épaules alterné à la poulie": "RoLdoKk-FkM",
   "Élévation deltoïdes alternée": "G_EXnZW9XCE",
@@ -444,6 +440,10 @@ const STRETCH_VIDEOS = {
   "Jeté à deux bras (kettlebell)": "gTzU2IV5Gzw",
   "Développé militaire à deux bras (kettlebell)": "2SXDYWIFOho",
   "Rowing menton (barre)": "amCU-ziHITM",
+};
+
+const STRETCH_VIDEOS = {
+  "Étirement des ischio-jambiers": "wEuAv8wOPVo",
   "Étirement du mollet debout (gastrocnémien)": "QasRqESLRnc",
   "Étirement des quadriceps": "4c5oLJxm2Nk",
   "Étirement des pectoraux, bras derrière la tête": "6pIDnFHUK8E",
