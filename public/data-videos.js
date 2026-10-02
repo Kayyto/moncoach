@@ -1,11 +1,11 @@
 // Mon Coach — vidéos YouTube de démonstration.
 //
 // Couverture volontairement partielle : seuls certains exercices/étirements
-// ont une vidéo pour l'instant (242 exercices + 49 étirements — couverture des étirements complète). Les autres
+// ont une vidéo pour l'instant 311 exercices + 49 étirements — couverture des étirements complète). Les autres
 // continuent d'afficher leur icône SVG (ICONS, dans data-core.js) sans
 // bouton vidéo — c'est un comportement normal, pas une erreur. La
 // couverture sera étendue progressivement sur le reste de la base
-// élargie (environ 618 exercices restants).
+// élargie (environ 553 exercices restants).
 //
 // Clé = nom exact de l'exercice/étirement (champ "n" dans EXERCISES/
 // STRETCHES, data-core.js). Valeur = identifiant de vidéo YouTube (11
@@ -259,6 +259,75 @@ const EXERCISE_VIDEOS = {
   "Curl araignée": "K23Wx3shKvY",
   "Curl biceps debout à la poulie": "OsQupgowb00",
   "Curl concentration debout": "_SGq9oL6ZxU",
+  "Rollout abdominal à genoux (barre)": "bgVyZhY1Qp0",
+  "Dead bug": "psOZS-sVDww",
+  "Crunch inversé": "vCPewsVmhz8",
+  "Lancer au-dessus de la tête à un bras (allongé)": "DViEHLvy-M8",
+  "Pompes élastique": "Hzhyjhq9tQo",
+  "Développé pectoraux (machine)": "rY0B8UFdne0",
+  "Développé au sol alterné": "wL7NClidGVE",
+  "Tour du monde (haltère)": "_91Uo7ev_f8",
+  "Développé couché barre prise moyenne": "RsobeWfbBcY",
+  "Développé couché guillotine (barre)": "g4t9IoHFA0s",
+  "Développé incliné barre prise moyenne": "qm2EQYSgL-U",
+  "Développé couché avec élastiques": "YVhBYSVB-dM",
+  "Pull-over haltère bras fléchis": "4B-BrBH17uM",
+  "Écarté au poids du corps": "asbZD3CW26w",
+  "Butterfly (machine)": "ybi3NPUK47M",
+  "Développé à la poulie": "_VM-RHaZ7M0",
+  "Écarté à la poulie vis-à-vis": "Hh7UC-I3k_U",
+  "Croix de fer à la poulie": "OWa-venDbfA",
+  "Développé couché avec chaînes": "lwnyUaMSkuI",
+  "Pompe horloge": "7M-e8LMSE74",
+  "Écarté croisé avec élastiques": "-yAXGzn1yY8",
+  "Développé couché décliné barre": "2MSLRr38APw",
+  "Développé couché décliné haltères": "YBTLr2Ag31Y",
+  "Écarté décliné haltères": "K_1GNeNRE7c",
+  "Pompe déclinée": "_yaZDfSCV7o",
+  "Développé décliné (Smith machine)": "39qwRmE6ffc",
+  "Dips pectoraux": "t2hRyRKOoNw",
+  "Développé couché haltères prise neutre": "cZUHtGKWMeQ",
+  "Développé au sol kettlebell un bras amplitude étendue": "Wo43ApJkZZo",
+  "Écarté à la poulie banc plat": "ajAmLc5hMeQ",
+  "Élévation frontale et pull-over": "X_eGLtiWZSs",
+  "Développé incliné haltères prise marteau": "dKklU8QlKh8",
+  "Développé incliné à la poulie": "qctZmqNhkfU",
+  "Écarté incliné à la poulie": "3MxWkp5lv10",
+  "Développé incliné haltères prise neutre": "dKklU8QlKh8",
+  "Écarté incliné haltères": "ji-9cdoO2yQ",
+  "Écarté incliné haltères avec rotation": "PW4dO9ZweZ0",
+  "Pompe inclinée": "EY-TBG6BbGs",
+  "Pompe inclinée avec saut en profondeur": "_VB5zG4GAnM",
+  "Pompe inclinée prise moyenne": "Oy1AzohemMc",
+  "Pompe inclinée prise inversée": "wTBqtU1aUgg",
+  "Pompe inclinée prise large": "ADoSbxAL1D4",
+  "Contraction isométrique des pectoraux": "LKP1YiVV0y8",
+  "Développé pectoraux (machine à levier)": "q6FL--5b5TM",
+  "Développé décliné (machine à levier)": "4o7Hcwz6vXk",
+  "Développé incliné (machine à levier)": "ig0NyNlSce4",
+  "Écarté à la poulie basse vis-à-vis": "LtiPOcSQQbI",
+  "Développé couché (machine)": "xVttwYOBp18",
+  "Passe de poitrine au medicine-ball": "e-zHTwXA8mE",
+  "Développé couché à la nuque": "JIECaET8nt4",
+  "Développé couché haltère un bras": "6Za1yz7b4pE",
+  "Écarté couché haltère un bras": "07K2vAqFMfE",
+  "Développé au sol kettlebell un bras": "0aOdIYaQx5Y",
+  "Pompes pliométriques avec kettlebells": "JNEe0lIwTPM",
+  "Pompe pliométrique": "WEPn4kldXf0",
+  "Pompe avec gainage latéral": "vKaLCCNxMho",
+  "Pompes pieds surélevés": "D9huH7uLLVs",
+  "Pompes (prises serrée et large)": "mrPijHkpVlA",
+  "Écarté à la poulie un bras": "hYg9KkHk1lE",
+  "Pompe un bras": "xp1tgjT_3k0",
+  "Développé couché (Smith machine)": "91N90YfOxJg",
+  "Développé incliné (Smith machine)": "QA8CrleEcLI",
+  "Développé à la poulie debout": "5BydigsTeak",
+  "Pull-over haltère bras tendus": "xPaeCUKbzXs",
+  "Pompe suspendue (sangles)": "dccCQmIZ_4E",
+  "Développé Svend": "_HJO__Wd5HQ",
+  "Développé couché barre prise large": "lTu5YGNA7yY",
+  "Développé couché décliné barre prise large": "ijIAoDfJXoA",
+  "Pull-over décliné barre prise large": "j0rpLoeXRwY",
 };
 
 const STRETCH_VIDEOS = {
