@@ -659,7 +659,7 @@ const EXERCISE_VIDEOS = {
   "Good Morning depuis les safety pins": "FubluSoLsmk",
   "Arraché suspendu": "D8jRVgL_dHc",
   "Arraché suspendu sous les genoux": "OE3haqtWJpo",
-  "Good Morning barre suspendue": "g7K2mLB8vRI"
+  "Good Morning barre suspendue": "g7K2mLB8vRI",
   "Sauts de haies": "0H_fXWTUSiY",
   "Inchworm": "GHvax0fMF-E",
   "Épaulé kettlebell départ au sol": "ap1a1Wf5f3Y",
@@ -699,7 +699,7 @@ const EXERCISE_VIDEOS = {
   "Arraché fente": "2tHB7t5GElw",
   "Fente statique": "KTOXbxyR6UQ",
   "Leg curl debout": "CZVTv9T_Ml8",
-  "Toucher des orteils debout": "TANxkG7tjWg"
+  "Toucher des orteils debout": "TANxkG7tjWg",
 "Soulevé de terre jambes tendues (barre)": "X5Owke6aaiw",
   "Soulevé de terre jambes tendues (haltères)": "hQgFixeXdZo",
   "Soulevé de terre sumo": "JbY72Him34Q",
@@ -739,7 +739,7 @@ const EXERCISE_VIDEOS = {
   "Vélo": "jhPqTyejY_0",
   "Vélo stationnaire": "rEqRmKAQ5xM",
   "Fente marchée au poids du corps": "LPmjFqNlDIw",
-  "Squat sur box": "aXsOfpTC594"
+  "Squat sur box": "aXsOfpTC594",
 "Squat sur box avec élastiques": "oNzKypAmpP4",
   "Squat sur box avec chaînes": "KWgye92ofo8",
   "Soulevé de terre à la poulie": "UHabQuYKnMM",
@@ -821,7 +821,7 @@ const EXERCISE_VIDEOS = {
   "Squat plié avec haltère": "Y-mIOYEdkWw",
   "Jerk en puissance": "Ir_34nxrk1Q",
   "Arraché puissance depuis blocs": "pvQhk2-3CTo",
-  "Saut rapide": "Oy4GBFpMYtM"
+  "Saut rapide": "Oy4GBFpMYtM",
 "Élévation de jambe arrière": "-IxsbGuqD2w",
   "Vélo couché": "ckJRUKyJ8cI",
   "Squat box avec bandes inversées": "9wHlvAilKAI",
