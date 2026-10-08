@@ -830,32 +830,8 @@
     <p class="hint" id="groupStatusHint">Connectez-vous pour partager vos recettes et votre série de séances avec le reste du groupe.</p>
 
     <div id="groupAuthForms">
-      <div class="row" id="groupAuthModeChoices">
-        <button type="button" class="secondary group-auth-mode-btn active" data-mode="login" id="groupModeLoginBtn">Se connecter</button>
-        <button type="button" class="secondary group-auth-mode-btn" data-mode="signup" id="groupModeSignupBtn">Créer mon profil</button>
-      </div>
-
-      <form id="groupLoginForm" class="group-auth-form">
-        <label class="field">Prénom
-          <input type="text" id="groupLoginName" autocomplete="off" required placeholder="ex : Julien">
-        </label>
-        <label class="field">Mot de passe
-          <input type="password" id="groupLoginPassword" required minlength="6">
-        </label>
-        <button type="submit" class="secondary">Se connecter</button>
-        <p class="group-auth-status" id="groupLoginStatus"></p>
-      </form>
-
-      <form id="groupSignupForm" class="group-auth-form" style="display:none;">
-        <label class="field">Prénom
-          <input type="text" id="groupSignupName" autocomplete="off" required placeholder="ex : Julien">
-        </label>
-        <label class="field">Mot de passe (6 caractères minimum)
-          <input type="password" id="groupSignupPassword" required minlength="6">
-        </label>
-        <button type="submit" class="secondary">Créer mon profil</button>
-        <p class="group-auth-status" id="groupSignupStatus"></p>
-      </form>
+      <button type="button" class="secondary" id="groupCentralLoginBtn">🔐 Se connecter avec mon compte Kayto</button>
+      <p class="hint" style="margin-top:8px;">Pas encore de compte ? Il se crée sur la page de connexion et est validé par Kayto. L'application reste utilisable sans compte ; la connexion sert au Groupe (séries, recettes partagées) et à la sauvegarde en ligne.</p>
     </div>
 
     <div id="groupConnectedPanel" style="display:none;">
@@ -1182,8 +1158,8 @@
           <h3 style="font-size:.95rem;margin:0 0 4px;">🛒 Liste de courses</h3>
           <p class="hint" id="shoppingListSummary"></p>
           <div class="btn-row" style="justify-content:flex-end;margin:-4px 0 6px;flex-wrap:wrap;gap:8px;">
-            <input type="text" id="carnetCodeInput" placeholder="Code personnel Carnet" autocomplete="off" style="flex:1;min-width:160px;max-width:220px;box-sizing:border-box;padding:7px 10px;border:1.5px solid var(--gridline);border-radius:8px;font-size:.85rem;font-family:inherit;color:var(--text-primary);background:var(--surface-1);">
-            <button type="button" class="secondary" id="sendToCarnetBtn">📤 Envoyer vers Carnet</button>
+            <input type="hidden" id="carnetCodeInput" placeholder="Code personnel Carnet" autocomplete="off" style="flex:1;min-width:160px;max-width:220px;box-sizing:border-box;padding:7px 10px;border:1.5px solid var(--gridline);border-radius:8px;font-size:.85rem;font-family:inherit;color:var(--text-primary);background:var(--surface-1);">
+            <button type="button" class="secondary" id="sendToCarnetBtn">📤 Envoyer vers ma To Do List</button>
             <button type="button" class="secondary" id="copyShoppingListBtn">📋 Copier la liste</button>
           </div>
           <p class="hint" id="carnetSendStatus" style="margin:-2px 0 10px;"></p>
@@ -1644,35 +1620,13 @@ document.addEventListener('click', (ev) => {
    brancher sur ces mêmes formulaires via leurs id. Si Firebase n'est pas
    disponible, ces formulaires restent visibles mais inertes (rien ne
    casse, ils n'affichent juste jamais de succès). */
-const groupModeLoginBtn = document.getElementById('groupModeLoginBtn');
-const groupModeSignupBtn = document.getElementById('groupModeSignupBtn');
-const groupLoginForm = document.getElementById('groupLoginForm');
-const groupSignupForm = document.getElementById('groupSignupForm');
-function setGroupAuthMode(mode){
-  groupModeLoginBtn.classList.toggle('active', mode === 'login');
-  groupModeSignupBtn.classList.toggle('active', mode === 'signup');
-  groupLoginForm.style.display = mode === 'login' ? '' : 'none';
-  groupSignupForm.style.display = mode === 'signup' ? '' : 'none';
-}
-groupModeLoginBtn.addEventListener('click', () => setGroupAuthMode('login'));
-groupModeSignupBtn.addEventListener('click', () => setGroupAuthMode('signup'));
-
-// Filet de sécurité : tant que le module Firebase (tout en bas du fichier)
-// n'a pas pris le relais (pas configuré, hors ligne...), on empêche ces
-// formulaires de faire une vraie soumission HTML (qui rechargerait la page
-// avec le mot de passe dans l'URL) et on affiche un message clair à la place.
 window.__groupFirebaseReady = false;
-function handleGroupFormFallback(ev){
-  if(window.__groupFirebaseReady) return;
-  ev.preventDefault();
-  const statusEl = ev.target.querySelector('.group-auth-status');
-  if(statusEl){
-    statusEl.textContent = '⚠️ Connexion au groupe indisponible pour le moment.';
-    statusEl.className = 'group-auth-status error';
-  }
+const COMPTE_APP = 'coach';
+const COMPTE_URL = 'https://compte.kayto.org';
+function allerAuCompte(){
+  location.href = COMPTE_URL + '/?app=' + COMPTE_APP + '&redirect=' + encodeURIComponent(location.origin + '/');
 }
-groupLoginForm.addEventListener('submit', handleGroupFormFallback);
-groupSignupForm.addEventListener('submit', handleGroupFormFallback);
+document.getElementById('groupCentralLoginBtn').addEventListener('click', allerAuCompte);
 
 /* ===================== CHOIX DU MODE : SPORT / NUTRITION / LES DEUX ===================== */
 // Adapte le formulaire (sections affichées, numérotation, texte du bouton) et,
@@ -5095,85 +5049,59 @@ document.getElementById('copyShoppingListBtn').addEventListener('click', async (
   }
 });
 
-/* ===================== Envoi de la liste de courses vers l'app "Carnet" =====================
-   Intégration à sens unique (MonCoach -> Carnet) : Carnet (liste.kayto.org,
-   une autre appli du même utilisateur) stocke tout son contenu sous forme
-   d'un seul objet JSON ("payload") par "code personnel", via son propre Worker
-   Cloudflare + D1. MonCoach ne l'appelle jamais directement (CORS) mais passe
-   par un petit relais côté serveur sur son propre Worker (/api/carnet-proxy/:code,
-   voir src/worker.js) qui transmet GET/PUT vers liste.kayto.org. On récupère le
-   payload, on y insère/remplace UNE liste dédiée (identifiée par un id fixe pour
-   que renvoyer la liste mette à jour la même au lieu d'en créer une nouvelle à
-   chaque fois), sans toucher au reste (notes, autres listes, planning repas
-   interne à Carnet, mode sombre…), puis on réenregistre le payload complet —
-   exactement comme le fait l'appli Carnet elle-même. */
+/* ===================== Envoi de la liste de courses vers la To Do List =====================
+   Le Worker (POST /api/carnet-send) dépose la liste dans le carnet de la personne
+   CONNECTÉE uniquement (retrouvé par l'e-mail de son compte Kayto) : aucun code à
+   saisir, et les courses des autres personnes ne se mélangent jamais aux siennes.
+   La liste dédiée garde un id fixe : renvoyer la liste met à jour la même. */
 const CARNET_LIST_ID = 'moncoach-courses';
-const CARNET_CODE_STORAGE_KEY = 'moncoach_carnet_code';
 
-const carnetCodeInput = document.getElementById('carnetCodeInput');
-carnetCodeInput.value = localStorage.getItem(CARNET_CODE_STORAGE_KEY) || '';
-carnetCodeInput.addEventListener('change', () => {
-  localStorage.setItem(CARNET_CODE_STORAGE_KEY, carnetCodeInput.value.trim());
-});
-
-async function sendShoppingListToCarnet(code){
-  const getRes = await fetch(`/api/carnet-proxy/${encodeURIComponent(code)}`);
-  if(getRes.status === 404) throw new Error('code_not_found');
-  if(!getRes.ok) throw new Error('http_' + getRes.status);
-  const data = await getRes.json();
-
-  const payload = (data && data.payload) || {};
-  const lists = Array.isArray(payload.lists) ? payload.lists.slice() : [];
-
+async function sendShoppingListToCarnet(){
   const groups = buildShoppingList();
-  const carnetItems = groups.map(g => {
+  const items = groups.map(g => {
     const subs = g.entries.map(e => e.qty).filter(Boolean).join(' + ');
     return {
       id: CARNET_LIST_ID + '-' + g.key,
       text: subs ? `${g.display} — ${subs}` : g.display,
       done: shoppingChecked.has(g.key),
-      qty: 1,
     };
   });
-  const carnetList = { id: CARNET_LIST_ID, name: 'Courses (MonCoach)', color: 'sage', emoji: '🛒', items: carnetItems };
-
-  const idx = lists.findIndex(l => l.id === CARNET_LIST_ID);
-  if(idx >= 0) lists[idx] = carnetList; else lists.push(carnetList);
-
-  const mergedPayload = Object.assign({}, payload, { lists });
-  const putRes = await fetch(`/api/carnet-proxy/${encodeURIComponent(code)}`, {
-    method: 'PUT',
+  const res = await fetch('/api/carnet-send', {
+    method: 'POST',
+    credentials: 'same-origin',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ payload: mergedPayload }),
+    body: JSON.stringify({ list: { items } }),
   });
-  if(!putRes.ok) throw new Error('http_' + putRes.status);
+  if(res.status === 401) throw new Error('not_logged_in');
+  if(res.status === 404) throw new Error('no_carnet');
+  if(!res.ok) throw new Error('http_' + res.status);
 }
 
 document.getElementById('sendToCarnetBtn').addEventListener('click', async () => {
   const statusEl = document.getElementById('carnetSendStatus');
-  const code = carnetCodeInput.value.trim();
-  if(!code){
-    statusEl.textContent = '⚠️ Renseignez votre code personnel Carnet (le même que dans l\'appli Carnet).';
-    return;
-  }
   const groups = buildShoppingList();
   if(!groups.length){
     statusEl.textContent = "⚠️ Générez d'abord une liste de courses (planifiez au moins un repas).";
     return;
   }
-  localStorage.setItem(CARNET_CODE_STORAGE_KEY, code);
+  if(!currentUid){
+    statusEl.textContent = '⚠️ Connectez-vous avec votre compte Kayto (section Groupe) pour envoyer la liste vers votre To Do List.';
+    return;
+  }
   const btn = document.getElementById('sendToCarnetBtn');
   btn.disabled = true;
   statusEl.textContent = 'Envoi en cours…';
   try{
-    await sendShoppingListToCarnet(code);
-    statusEl.textContent = "✅ Liste envoyée — ouvrez l'appli Carnet avec ce même code pour la voir (liste « Courses (MonCoach) »).";
+    await sendShoppingListToCarnet();
+    statusEl.textContent = "✅ Liste envoyée — ouvrez votre To Do List pour la voir (liste « Courses (MonCoach) »).";
   }catch(err){
-    if(err && err.message === 'code_not_found'){
-      statusEl.textContent = "⚠️ Aucun carnet trouvé avec ce code — vérifiez qu'il correspond exactement à celui utilisé dans l'appli Carnet.";
+    if(err && err.message === 'no_carnet'){
+      statusEl.textContent = "⚠️ Aucune To Do List trouvée pour votre compte — ouvrez d'abord la To Do List (liste.kayto.org) avec le même e-mail que votre compte MonCoach.";
+    } else if(err && err.message === 'not_logged_in'){
+      statusEl.textContent = '⚠️ Session expirée — reconnectez-vous avec votre compte Kayto.';
     } else {
       statusEl.textContent = '⚠️ Envoi impossible pour le moment (connexion réseau ?) — réessayez plus tard.';
-      console.warn('MonCoach — Envoi vers Carnet : échec.', err);
+      console.warn('MonCoach — Envoi vers la To Do List : échec.', err);
     }
   }finally{
     btn.disabled = false;
@@ -5956,49 +5884,9 @@ document.getElementById('loadDataInput').addEventListener('change', function(){
     handleDisconnected();
   }
 
-  // ---- Formulaires "Créer mon profil" / "Se connecter" / "Se déconnecter" ----
-  document.getElementById('groupSignupForm').addEventListener('submit', async (ev) => {
-    ev.preventDefault();
-    const statusEl = document.getElementById('groupSignupStatus');
-    const name = document.getElementById('groupSignupName').value.trim();
-    const password = document.getElementById('groupSignupPassword').value;
-    statusEl.className = 'group-auth-status';
-    if(!name){ statusEl.textContent = '⚠️ Choisissez un prénom.'; statusEl.className = 'group-auth-status error'; return; }
-    if(password.length < 6){ statusEl.textContent = '⚠️ Le mot de passe doit faire au moins 6 caractères.'; statusEl.className = 'group-auth-status error'; return; }
-    statusEl.textContent = 'Création en cours…';
-    try{
-      const data = await api('/api/auth/signup', { method: 'POST', body: JSON.stringify({ name, password }) });
-      statusEl.textContent = `✅ Profil créé — connecté(e) en tant que ${data.name}.`;
-      statusEl.className = 'group-auth-status ok';
-      document.getElementById('groupSignupForm').reset();
-      await handleConnected(data);
-    }catch(err){
-      statusEl.textContent = errorToFrench(err);
-      statusEl.className = 'group-auth-status error';
-    }
-  });
-
-  document.getElementById('groupLoginForm').addEventListener('submit', async (ev) => {
-    ev.preventDefault();
-    const statusEl = document.getElementById('groupLoginStatus');
-    const name = document.getElementById('groupLoginName').value.trim();
-    const password = document.getElementById('groupLoginPassword').value;
-    statusEl.className = 'group-auth-status';
-    if(!name || !password){ statusEl.textContent = '⚠️ Renseignez votre prénom et votre mot de passe.'; statusEl.className = 'group-auth-status error'; return; }
-    statusEl.textContent = 'Connexion en cours…';
-    try{
-      const data = await api('/api/auth/login', { method: 'POST', body: JSON.stringify({ name, password }) });
-      statusEl.textContent = '';
-      document.getElementById('groupLoginForm').reset();
-      await handleConnected(data);
-    }catch(err){
-      statusEl.textContent = errorToFrench(err);
-      statusEl.className = 'group-auth-status error';
-    }
-  });
-
+  // ---- Déconnexion (compte central) ----
   document.getElementById('groupSignOutBtn').addEventListener('click', async () => {
-    try{ await api('/api/auth/logout', { method: 'POST' }); }catch(err){ /* on se déconnecte localement de toute façon */ }
+    try{ await fetch(COMPTE_URL + '/api/logout?app=' + COMPTE_APP, { method: 'POST', credentials: 'include' }); }catch(err){ /* on se déconnecte localement de toute façon */ }
     handleDisconnected();
   });
 })();
