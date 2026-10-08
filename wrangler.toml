@@ -14,3 +14,16 @@ database_id = "8c238841-f934-4b4d-a8e4-0d1bbac6527a"
 [[r2_buckets]]
 binding = "PHOTOS"
 bucket_name = "moncoach-photos"
+
+# Connexion : vérification de la session auprès du service de comptes central
+# (liaison interne Worker -> Worker, sans repasser par Internet).
+[[services]]
+binding = "COMPTE"
+service = "kayto-compte"
+
+# To Do List : envoi de la liste de courses dans le carnet de la personne connectée
+# (liaison interne Worker -> Worker, entrée CarnetSync ; jamais accessible depuis Internet).
+[[services]]
+binding = "LISTE"
+service = "carnet-liste"
+entrypoint = "CarnetSync"
