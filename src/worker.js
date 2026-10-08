@@ -1,59 +1,20 @@
 // Mon Coach — Worker (Cloudflare Workers + D1 + R2)
-// Migration depuis Firebase Auth + Firestore.
 //
-// Auth : même principe que l'app Firebase d'origine — un prénom (unique
-// dans le groupe) + un mot de passe, sans vraie adresse email. Le prénom
-// "Kayto" est automatiquement administrateur (comme ADMIN_ACCOUNT_NAME
-// côté Firebase).
+// Connexion : compte central Kayto (compte.kayto.org). Le navigateur envoie le
+// cookie kc_coach ; le Worker le fait valider par le service de comptes, puis
+// retrouve le profil MonCoach de la personne (colonne members.account_id).
+// Une personne inconnue obtient un profil VIDE (jamais de reprise automatique
+// d'un ancien profil). L'application reste utilisable sans connexion : seul le
+// "Groupe" (séries, recettes partagées, sauvegarde en ligne) demande un compte.
+// Administrateur = colonne members.is_admin (attribuée à la main dans la base).
 
-const ADMIN_NAME = 'kayto';
-const SESSION_DAYS = 90;
-const COOKIE_NAME = 'mc_session';
-
-function slugify(name) {
-  return String(name || '').trim().toLowerCase()
-    .normalize('NFD').replace(/[̀-ͯ]/g, '')
-    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-}
-
-function b64(bytes) {
-  let bin = '';
-  const arr = new Uint8Array(bytes);
-  for (let i = 0; i < arr.length; i++) bin += String.fromCharCode(arr[i]);
-  return btoa(bin);
-}
-
-async function hacherMdp(mdp) {
-  const sel = crypto.getRandomValues(new Uint8Array(16));
-  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(mdp), 'PBKDF2', false, ['deriveBits']);
-  const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: sel, iterations: 100000, hash: 'SHA-256' }, base, 256);
-  return `pbkdf2$100000$${b64(sel)}$${b64(bits)}`;
-}
-
-async function verifierMdp(mdp, stocke) {
-  if (!stocke) return false;
-  const parts = stocke.split('$');
-  if (parts.length !== 4 || parts[0] !== 'pbkdf2') return false;
-  const iterations = parseInt(parts[1], 10);
-  const sel = Uint8Array.from(atob(parts[2]), c => c.charCodeAt(0));
-  const base = await crypto.subtle.importKey('raw', new TextEncoder().encode(mdp), 'PBKDF2', false, ['deriveBits']);
-  const bits = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: sel, iterations, hash: 'SHA-256' }, base, 256);
-  const calcule = b64(bits);
-  if (calcule.length !== parts[3].length) return false;
-  let diff = 0;
-  for (let i = 0; i < calcule.length; i++) diff |= calcule.charCodeAt(i) ^ parts[3].charCodeAt(i);
-  return diff === 0;
-}
-
-function lireCookie(req, nom) {
-  const m = (req.headers.get('Cookie') || '').match(new RegExp(`(?:^|;\\s*)${nom}=([^;]+)`));
-  return m ? m[1] : null;
-}
-
-function cookieReponse(token) {
-  const expires = new Date(Date.now() + SESSION_DAYS * 86400000).toUTCString();
-  return `${COOKIE_NAME}=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Expires=${expires}`;
-}
+const COMPTE_URL = 'https://compte.kayto.org';
+const APP_SLUG = 'coach';
+const SESSION_COOKIE = 'kc_coach';
+const SESSION_CACHE_MS = 30000;
+const sessionCache = new Map(); // empreinte du cookie -> { at, account }
+const authWhy = new WeakMap();  // requête -> raison de l'échec (visible dans X-Auth-Why de /api/me)
+const CARNET_LIST_ID = 'moncoach-courses';
 
 function json(data, init) {
   return new Response(JSON.stringify(data), {
@@ -62,24 +23,88 @@ function json(data, init) {
   });
 }
 
-async function getUtilisateurCourant(req, env) {
-  const token = lireCookie(req, COOKIE_NAME);
-  if (!token) return null;
-  const row = await env.DB.prepare(
-    `SELECT m.uid, m.name, m.is_admin FROM sessions s
-     JOIN members m ON m.uid = s.uid
-     WHERE s.token = ? AND s.expires_at > datetime('now')`
-  ).bind(token).first();
-  if (!row) return null;
-  return { uid: row.uid, name: row.name, isAdmin: !!row.is_admin };
+function lireCookie(req, nom) {
+  const m = (req.headers.get('Cookie') || '').match(new RegExp(`(?:^|;\\s*)${nom}=([^;]+)`));
+  return m ? m[1] : null;
 }
 
-async function creerSession(env, uid) {
-  const token = crypto.randomUUID() + crypto.randomUUID();
-  const expires = new Date(Date.now() + SESSION_DAYS * 86400000).toISOString();
-  await env.DB.prepare('INSERT INTO sessions (token, uid, expires_at) VALUES (?, ?, ?)')
-    .bind(token, uid, expires).run();
-  return token;
+async function sha256Hex(str) {
+  const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return [...new Uint8Array(d)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+// Demande au service de comptes si le cookie est valide pour cette app (30 s en mémoire).
+async function getCentralAccount(req, env) {
+  const token = lireCookie(req, SESSION_COOKIE);
+  if (!token) { authWhy.set(req, 'pas-de-cookie'); return null; }
+  const key = await sha256Hex(token);
+  const hit = sessionCache.get(key);
+  if (hit && Date.now() - hit.at < SESSION_CACHE_MS) return hit.account;
+  let account = null;
+  try {
+    const sessionUrl = `${(env && env.COMPTE_URL) || COMPTE_URL}/api/session?app=${APP_SLUG}`;
+    const init = { headers: { Cookie: `${SESSION_COOKIE}=${token}` } };
+    const res = env && env.COMPTE && typeof env.COMPTE.fetch === 'function'
+      ? await env.COMPTE.fetch(new Request(sessionUrl, init))
+      : await fetch(sessionUrl, init);
+    if (!res.ok) authWhy.set(req, `comptes-http-${res.status}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.authenticated && data.account && data.account.app === APP_SLUG && typeof data.account.id === 'string' && data.account.id) {
+        account = { id: data.account.id, name: String(data.account.name || '').trim() || 'Profil', email: String(data.account.email || '').trim().toLowerCase() };
+      }
+    }
+  } catch (e) {
+    console.error('Service de comptes injoignable :', e.message);
+    authWhy.set(req, 'comptes-injoignable');
+    return null;
+  }
+  if (!account) {
+    if (authWhy.has(req)) return null; // erreur technique : pas gardée en cache
+    authWhy.set(req, 'session-refusee-par-comptes');
+  }
+  if (sessionCache.size > 500) sessionCache.clear();
+  sessionCache.set(key, { at: Date.now(), account });
+  return account;
+}
+
+// Retrouve le profil lié à un compte central ; sinon en crée un VIDE.
+async function membrePourCompte(env, account) {
+  const sel = 'SELECT uid, name, is_admin FROM members WHERE account_id = ?';
+  const existant = await env.DB.prepare(sel).bind(account.id).first();
+  if (existant) return existant;
+  const base = account.name.slice(0, 40);
+  for (let i = 1; i <= 20; i++) {
+    const nom = i === 1 ? base : `${base} ${i}`;
+    const uid = crypto.randomUUID();
+    try {
+      await env.DB.batch([
+        env.DB.prepare("INSERT INTO members (uid, name, password_hash, is_admin, account_id) VALUES (?, ?, '', 0, ?)").bind(uid, nom, account.id),
+        env.DB.prepare("INSERT INTO private_data (uid, data) VALUES (?, '{}')").bind(uid),
+        env.DB.prepare("INSERT INTO streaks (uid, data) VALUES (?, '{}')").bind(uid),
+      ]);
+      break;
+    } catch (e) {
+      // prénom déjà pris (ou création simultanée du même compte) : on réessaie
+      const deja = await env.DB.prepare(sel).bind(account.id).first();
+      if (deja) return deja;
+    }
+  }
+  return env.DB.prepare(sel).bind(account.id).first();
+}
+
+// Personne connectée : { uid, name, isAdmin, email } ou null.
+async function getUtilisateurCourant(req, env) {
+  // Protection CSRF : une requête qui modifie des données doit venir de ce site.
+  if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
+    const origin = req.headers.get('Origin');
+    if (origin && origin !== new URL(req.url).origin) { authWhy.set(req, 'origine-refusee'); return null; }
+  }
+  const account = await getCentralAccount(req, env);
+  if (!account) return null;
+  const m = await membrePourCompte(env, account);
+  if (!m) return null;
+  return { uid: m.uid, name: m.name, isAdmin: !!m.is_admin, email: account.email };
 }
 
 export default {
@@ -88,9 +113,6 @@ export default {
     const p = url.pathname;
 
     try {
-      if (p === '/api/auth/signup' && req.method === 'POST') return await handleSignup(req, env);
-      if (p === '/api/auth/login' && req.method === 'POST') return await handleLogin(req, env);
-      if (p === '/api/auth/logout' && req.method === 'POST') return await handleLogout(req, env);
       if (p === '/api/me' && req.method === 'GET') return await handleMe(req, env);
 
       if (p === '/api/private' && req.method === 'GET') return await handleGetPrivate(req, env);
@@ -115,9 +137,7 @@ export default {
 
       if (p.startsWith('/photos/') && req.method === 'GET') return await handlePhoto(req, env, p.slice('/photos/'.length));
 
-      if (p.startsWith('/api/carnet-proxy/') && (req.method === 'GET' || req.method === 'PUT')) {
-        return await handleCarnetProxy(req, env, decodeURIComponent(p.slice('/api/carnet-proxy/'.length)));
-      }
+      if (p === '/api/carnet-send' && req.method === 'POST') return await handleCarnetSend(req, env);
 
       return env.ASSETS.fetch(req);
     } catch (err) {
@@ -127,60 +147,10 @@ export default {
   },
 };
 
-async function handleSignup(req, env) {
-  const body = await req.json().catch(() => null);
-  const name = (body && body.name || '').trim();
-  const password = body && body.password || '';
-  if (!name || name.length < 2) return json({ error: 'Prénom invalide' }, { status: 400 });
-  if (!password || password.length < 4) return json({ error: 'Mot de passe trop court (4 caractères min.)' }, { status: 400 });
-
-  const existing = await env.DB.prepare('SELECT uid FROM members WHERE name = ?').bind(name).first();
-  if (existing) return json({ error: 'Ce prénom est déjà pris dans le groupe' }, { status: 409 });
-
-  const uid = crypto.randomUUID();
-  const hash = await hacherMdp(password);
-  const isAdmin = slugify(name) === ADMIN_NAME ? 1 : 0;
-
-  await env.DB.batch([
-    env.DB.prepare('INSERT INTO members (uid, name, password_hash, is_admin) VALUES (?, ?, ?, ?)').bind(uid, name, hash, isAdmin),
-    env.DB.prepare("INSERT INTO private_data (uid, data) VALUES (?, '{}')").bind(uid),
-    env.DB.prepare("INSERT INTO streaks (uid, data) VALUES (?, '{}')").bind(uid),
-  ]);
-
-  const token = await creerSession(env, uid);
-  return json({ uid, name, isAdmin: !!isAdmin }, { headers: { 'Set-Cookie': cookieReponse(token) } });
-}
-
-async function handleLogin(req, env) {
-  const body = await req.json().catch(() => null);
-  const name = (body && body.name || '').trim();
-  const password = body && body.password || '';
-  const row = await env.DB.prepare('SELECT uid, name, password_hash, is_admin FROM members WHERE name = ?').bind(name).first();
-  if (!row || !(await verifierMdp(password, row.password_hash))) {
-    return json({ error: 'Prénom ou mot de passe incorrect' }, { status: 401 });
-  }
-
-  // Promotion admin automatique si le prénom correspond, comme côté Firebase.
-  let isAdmin = !!row.is_admin;
-  if (slugify(row.name) === ADMIN_NAME && !isAdmin) {
-    await env.DB.prepare('UPDATE members SET is_admin = 1 WHERE uid = ?').bind(row.uid).run();
-    isAdmin = true;
-  }
-
-  const token = await creerSession(env, row.uid);
-  return json({ uid: row.uid, name: row.name, isAdmin }, { headers: { 'Set-Cookie': cookieReponse(token) } });
-}
-
-async function handleLogout(req, env) {
-  const token = lireCookie(req, COOKIE_NAME);
-  if (token) await env.DB.prepare('DELETE FROM sessions WHERE token = ?').bind(token).run();
-  return json({ ok: true }, { headers: { 'Set-Cookie': `${COOKIE_NAME}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0` } });
-}
-
 async function handleMe(req, env) {
   const user = await getUtilisateurCourant(req, env);
-  if (!user) return json({ user: null });
-  return json({ user });
+  if (!user) return json({ user: null }, { headers: { 'X-Auth-Why': authWhy.get(req) || 'inconnu' } });
+  return json({ user: { uid: user.uid, name: user.name, isAdmin: user.isAdmin } });
 }
 
 function requireAuth(user) {
@@ -319,24 +289,38 @@ async function handlePhoto(req, env, key) {
   });
 }
 
-// Petit relais côté serveur vers l'app "Carnet" (liste.kayto.org), utilisé par
-// l'envoi de la liste de courses depuis MonCoach. Un fetch direct depuis le
-// navigateur serait bloqué par CORS (liste.kayto.org ne renvoie pas
-// Access-Control-Allow-Origin) ; en passant par notre propre Worker (même
-// origine que la page), aucun en-tête CORS n'est nécessaire.
-async function handleCarnetProxy(req, env, code) {
-  if (!code) return json({ error: 'Code manquant' }, { status: 400 });
-  const target = `https://liste.kayto.org/api/carnet/${encodeURIComponent(code)}`;
-  try {
-    const init = { method: req.method, headers: { 'Content-Type': 'application/json' } };
-    if (req.method === 'PUT') init.body = await req.text();
-    const upstream = await fetch(target, init);
-    const text = await upstream.text();
-    return new Response(text, {
-      status: upstream.status,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  } catch (err) {
-    return json({ error: 'Carnet injoignable pour le moment' }, { status: 502 });
+// Envoi de la liste de courses vers la To Do List (liste.kayto.org) de LA PERSONNE
+// CONNECTÉE uniquement : le carnet est retrouvé par l'e-mail de son compte central
+// (liaison de service interne, aucun code à saisir, aucun accès aux carnets des autres).
+// La personne doit avoir déjà ouvert la To Do List avec la même adresse e-mail.
+async function handleCarnetSend(req, env) {
+  const user = await getUtilisateurCourant(req, env);
+  const unauth = requireAuth(user); if (unauth) return unauth;
+  if (!env.LISTE) return json({ error: 'no_carnet' }, { status: 404 });
+  const body = await req.json().catch(() => null);
+  const list = body && body.list;
+  if (!list || typeof list !== 'object' || !Array.isArray(list.items) || list.items.length > 500) {
+    return json({ error: 'Liste invalide' }, { status: 400 });
   }
+  const propre = {
+    id: CARNET_LIST_ID,
+    name: 'Courses (MonCoach)',
+    color: 'sage',
+    emoji: '🛒',
+    items: list.items.map((it, i) => ({
+      id: String(it && it.id || `${CARNET_LIST_ID}-${i}`).slice(0, 120),
+      text: String(it && it.text || '').slice(0, 300),
+      done: !!(it && it.done),
+      qty: 1,
+    })),
+  };
+  let payload = await env.LISTE.getPayload(user.email);
+  if (payload === null || payload === undefined) return json({ error: 'no_carnet' }, { status: 404 });
+  if (typeof payload !== 'object' || Array.isArray(payload)) payload = {};
+  const lists = Array.isArray(payload.lists) ? payload.lists.slice() : [];
+  const idx = lists.findIndex(l => l && l.id === CARNET_LIST_ID);
+  if (idx >= 0) lists[idx] = propre; else lists.push(propre);
+  const ok = await env.LISTE.putPayload(user.email, Object.assign({}, payload, { lists }));
+  if (!ok) return json({ error: 'no_carnet' }, { status: 404 });
+  return json({ ok: true });
 }
