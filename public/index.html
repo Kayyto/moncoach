@@ -787,6 +787,111 @@
   .shop-sub{list-style:none;margin:6px 0 0;padding:0 0 0 26px;font-size:.8rem;color:var(--text-secondary);}
   .shop-sub li{margin-bottom:2px;}
   .shop-sub .shop-recipe{color:var(--text-muted);font-style:italic;}
+
+  /* ===== MonCoach+ (oct. 2026) ===== */
+  /* pastille d'état de la sauvegarde */
+  .sync-pill{position:fixed;left:12px;bottom:12px;z-index:60;max-width:calc(100vw - 24px);padding:6px 12px;border-radius:999px;
+    background:var(--surface-1);border:1px solid var(--gridline);color:var(--text-secondary);font-size:.74rem;font-weight:600;
+    box-shadow:0 2px 10px rgba(0,0,0,.35);pointer-events:none;opacity:0;transition:opacity .25s;}
+  .sync-pill.show{opacity:1;}
+  .sync-pill.ok{color:var(--good);border-color:rgba(34,197,94,.45);}
+  .sync-pill.err{color:var(--danger);border-color:rgba(248,113,113,.55);}
+  .sync-pill.saving,.sync-pill.wait{color:var(--accent-text);}
+  body.rest-active .sync-pill{display:none;}
+
+  /* semaine du cycle */
+  #planBanner:empty{display:none;}
+  #planBanner{background:var(--surface-1);border:1px solid var(--gridline);border-radius:12px;padding:12px 14px;margin:0 0 14px;}
+  .plan-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
+  .plan-title{font-weight:800;font-size:1rem;}
+  .plan-sub{font-size:.78rem;color:var(--text-muted);margin-top:2px;}
+  .plan-nav{display:flex;align-items:center;gap:6px;}
+  .plan-dot,.plan-arrow{font-family:inherit;border:1.5px solid var(--gridline);background:var(--surface-2);color:var(--text-secondary);
+    min-width:34px;height:34px;border-radius:50%;font-weight:700;cursor:pointer;padding:0;}
+  .plan-arrow{border-radius:9px;}
+  .plan-arrow:disabled{opacity:.35;cursor:default;}
+  .plan-dot.past{border-color:var(--good);color:var(--good);}
+  .plan-dot.on{background:var(--accent);border-color:var(--accent);color:var(--on-accent);}
+  .plan-line{font-size:.84rem;color:var(--text-secondary);margin-top:8px;}
+  .plan-link{background:none;border:none;color:var(--accent-text);font-family:inherit;font-size:inherit;cursor:pointer;text-decoration:underline;padding:0;}
+  .plan-restart{font-size:.76rem;}
+  .plan-done{margin-top:10px;padding:12px;border-radius:10px;background:var(--accent-tint);font-size:.88rem;}
+  .plan-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;}
+  body.focus-session #planBanner{display:none !important;}
+
+  /* séries + repos automatique */
+  .set-track{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:2px 10px 10px;}
+  .set-chips{display:flex;gap:6px;flex-wrap:wrap;}
+  .set-chip{width:14px;height:14px;border-radius:50%;border:2px solid var(--gridline);background:transparent;}
+  .set-chip.on{background:var(--good);border-color:var(--good);}
+  .set-done-btn{font-family:inherit;font-weight:700;font-size:.8rem;padding:8px 12px;border-radius:9px;cursor:pointer;
+    background:var(--accent);color:var(--on-accent);border:none;min-height:38px;}
+  .exo-row.exo-done{border-color:var(--good);}
+  .exo-row.exo-done .set-done-btn{background:var(--surface-1);color:var(--text-secondary);border:1.5px solid var(--gridline);}
+  .swap-btn{font-family:inherit;font-weight:700;font-size:.82rem;padding:8px 14px;border-radius:999px;cursor:pointer;margin-top:4px;
+    background:var(--surface-1);color:var(--accent-text);border:1.5px solid var(--accent);}
+  .swap-btn:hover{background:var(--accent-tint);}
+
+  #restBar{position:fixed;left:50%;bottom:14px;transform:translate(-50%,160%);z-index:70;width:min(94vw,440px);
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;border-radius:14px;background:var(--surface-1);
+    border:1.5px solid var(--accent);box-shadow:0 6px 24px rgba(0,0,0,.5);transition:transform .25s;}
+  #restBar.on{transform:translate(-50%,0);}
+  #restBar.done{border-color:var(--good);}
+  #restBar .rest-info{flex:1;min-width:130px;}
+  #restBar .rest-label{font-size:.76rem;color:var(--text-secondary);}
+  #restBar .rest-time{font-size:1.7rem;font-weight:800;font-variant-numeric:tabular-nums;color:var(--accent-text);line-height:1.1;}
+  #restBar.done .rest-time{color:var(--good);}
+  #restBar .rest-prog{flex-basis:100%;height:5px;border-radius:3px;background:var(--gridline);overflow:hidden;order:5;}
+  #restBar .rest-prog i{display:block;height:100%;width:0;background:var(--accent);transition:width .25s linear;}
+  #restBar button{font-family:inherit;font-weight:700;font-size:.8rem;min-height:38px;padding:0 12px;border-radius:9px;cursor:pointer;
+    background:var(--surface-2);color:var(--accent-text);border:1.5px solid var(--gridline);}
+
+  /* message flottant */
+  #mcToast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,200%);z-index:80;max-width:min(94vw,460px);display:flex;gap:12px;align-items:center;
+    padding:10px 14px;border-radius:12px;background:var(--surface-2);border:1px solid var(--accent);color:var(--text-primary);font-size:.86rem;
+    box-shadow:0 6px 24px rgba(0,0,0,.5);transition:transform .25s;}
+  #mcToast.on{transform:translate(-50%,0);}
+  body.rest-active #mcToast.on{transform:translate(-50%,-92px);}
+  .mc-toast-act{font-family:inherit;font-weight:700;background:none;border:none;color:var(--accent-text);cursor:pointer;text-decoration:underline;font-size:.86rem;white-space:nowrap;}
+
+  /* ressenti */
+  .mc-modal{position:fixed;inset:0;z-index:90;background:rgba(5,8,15,.72);display:flex;align-items:center;justify-content:center;padding:16px;}
+  .mc-modal[hidden]{display:none;}
+  .mc-modal-box{background:var(--surface-1);border:1px solid var(--gridline);border-radius:16px;padding:20px;width:min(100%,400px);text-align:center;}
+  .mc-modal-box h3{margin:0 0 4px;font-size:1.1rem;}
+  .mc-modal-box p{margin:0 0 14px;color:var(--text-secondary);font-size:.86rem;}
+  .feel-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .feel-row button{font-family:inherit;display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 4px;border-radius:12px;cursor:pointer;
+    background:var(--surface-2);color:var(--text-primary);border:1.5px solid var(--gridline);font-size:1.7rem;font-weight:700;}
+  .feel-row button span{font-size:.76rem;color:var(--text-secondary);font-weight:600;}
+  .feel-row button:hover,.feel-row button:focus-visible{border-color:var(--accent);background:var(--accent-tint);}
+  .feel-skip{margin-top:12px;background:none;border:none;color:var(--text-muted);font-family:inherit;font-size:.82rem;cursor:pointer;text-decoration:underline;}
+  .feel-badge{background:none;border:1px solid var(--gridline);border-radius:8px;cursor:pointer;font-size:1rem;padding:2px 8px;margin-left:auto;margin-right:6px;color:var(--text-muted);font-family:inherit;}
+
+  /* favoris et récents */
+  .journal-quick{margin:14px 0 6px;display:flex;flex-direction:column;gap:10px;}
+  .qrow{display:flex;gap:10px;align-items:flex-start;}
+  .qtitle{flex:none;width:86px;font-size:.8rem;font-weight:700;color:var(--text-secondary);padding-top:6px;}
+  .qlist{display:flex;flex-wrap:wrap;gap:6px;min-width:0;}
+  .qchip{display:inline-flex;align-items:stretch;border:1px solid var(--gridline);border-radius:999px;background:var(--surface-2);overflow:hidden;max-width:100%;}
+  .qadd{font-family:inherit;background:none;border:none;color:var(--text-primary);cursor:pointer;padding:7px 10px;font-size:.82rem;text-align:left;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-height:34px;}
+  .qadd small{color:var(--text-muted);margin-left:4px;}
+  .qadd:hover{background:var(--accent-tint);}
+  .qstar{font-family:inherit;background:none;border:none;cursor:pointer;padding:0 10px;font-size:1rem;color:var(--accent-text);min-height:34px;}
+  .row-star{border:1px solid var(--gridline);border-radius:8px;margin-left:auto;margin-right:6px;padding:2px 8px;min-height:0;}
+  .qhint{font-size:.8rem;color:var(--text-muted);padding-top:6px;}
+  @media(max-width:520px){.qrow{flex-direction:column;gap:4px;} .qtitle{width:auto;padding-top:0;}}
+
+  /* courbes */
+  .range-bar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:4px 0 10px;}
+  .range-label{font-size:.78rem;color:var(--text-muted);margin-right:2px;}
+  .range-chip{font-family:inherit;font-size:.8rem;font-weight:700;padding:6px 12px;border-radius:999px;cursor:pointer;min-height:34px;
+    background:var(--surface-2);color:var(--text-secondary);border:1.5px solid var(--gridline);}
+  .range-chip.on{background:var(--accent);color:var(--on-accent);border-color:var(--accent);}
+  .chart-note{font-size:.82rem;color:var(--text-secondary);margin:6px 0 14px;}
+
+  @media print{.sync-pill,#restBar,#mcToast,.mc-modal,.set-track,.swap-btn,#planBanner .plan-nav{display:none !important;}}
 </style>
 </head>
 <body>
@@ -823,7 +928,7 @@
     <label class="file-btn" for="loadDataInput">📂 Charger une sauvegarde</label>
     <input type="file" id="loadDataInput" accept="application/json" style="display:none;">
   </div>
-  <p class="save-load-note" id="saveLoadStatus">Votre profil, votre programme et votre suivi sont enregistrés dans un fichier que vous téléchargez — rechargez-le à votre prochaine visite pour tout retrouver.</p>
+  <p class="save-load-note" id="saveLoadStatus">Connecté, vos données (profil, programme, suivi, journal) sont enregistrées automatiquement dans votre compte ; sinon elles restent sur cet appareil. Le fichier ci-dessous est une copie de secours facultative.</p>
 
   <div class="group-section" id="groupSection">
     <h3 style="margin:18px 0 6px;">👥 Groupe</h3>
@@ -1092,6 +1197,7 @@
         <h2>Votre programme sportif</h2>
         <p class="hint" id="sportSummary"></p>
         <div class="btn-row"><button type="button" class="secondary" id="regenSport">🔀 Régénérer les exercices</button></div>
+        <div id="planBanner"></div>
         <div id="sportDays"></div>
       </section>
 
@@ -1099,7 +1205,9 @@
         <h2>📈 Suivi de vos séances</h2>
         <p class="hint">Marquez une séance comme faite (bouton sous chaque jour) pour suivre votre régularité dans le temps.</p>
         <div class="stat-row" id="trackStatRow"></div>
+        <div class="range-bar" id="chartRangeBar"></div>
         <div class="track-chart" id="trackChart"></div>
+        <p class="chart-note" id="trackChartNote"></p>
 
         <h3 style="margin:18px 0 8px;font-size:.95rem;">🗂️ Par style de séance</h3>
         <div id="styleBreakdown"></div>
@@ -1175,6 +1283,8 @@
           <input type="date" id="journalDate">
         </label>
 
+        <div class="journal-quick" id="journalQuick"></div>
+
         <form id="journalForm" class="journal-form">
           <label class="field">Aliment / plat
             <input type="text" id="journalFoodName" list="allRecipeNames" placeholder="ex : 2 œufs au plat, ou une recette existante…" autocomplete="off" required>
@@ -1230,7 +1340,7 @@
 
       <section class="card tab-panel" id="my-recipes-results">
         <h2>➕ Ajouter mes recettes <span class="count-badge" id="myRecipesBadge"></span></h2>
-        <p class="hint">Ajoutez vos propres recettes : elles apparaîtront avec toutes les autres, dans le navigateur, dans les résultats générés et dans le planificateur de repas. Elles sont enregistrées avec le reste de vos données via « 💾 Enregistrer mes données » (dans « Mon profil »).</p>
+        <p class="hint">Ajoutez vos propres recettes : elles apparaîtront avec toutes les autres, dans le navigateur, dans les résultats générés et dans le planificateur de repas. Connecté, elles sont enregistrées automatiquement et partagées avec le groupe.</p>
 
         <form id="addRecipeForm">
           <label class="field">Nom de la recette
@@ -5443,6 +5553,44 @@ document.getElementById('loadDataInput').addEventListener('change', function(){
   // les données qu'on vient de lire).
   let applyingRemoteState = false;
   let groupPollTimer = null;
+  // Sauvegarde fiable : on n'écrit en ligne qu'après avoir LU les données en ligne
+  // (sinon un échec de lecture suivi d'une modification écraserait tout).
+  let privateReady = false;
+  let saveInFlight = false;
+  let resaveNeeded = false;
+  let saveRetryTimer = null;
+  let loadRetryTimer = null;
+  let lastKnownSavedAt = '';
+  let lastRefreshCheck = 0;
+  const LS_KEY = 'moncoach_miroir_v1';
+  function heure(){ return new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }); }
+  let syncHideT = null;
+  function setSync(kind, msg){
+    const pill = document.getElementById('syncPill');
+    if(!pill) return;
+    pill.className = 'sync-pill show ' + kind;
+    pill.textContent = msg;
+    if(syncHideT){ clearTimeout(syncHideT); syncHideT = null; }
+    if(kind === 'ok' || kind === 'local'){
+      syncHideT = setTimeout(() => { pill.classList.remove('show'); }, 4500);
+    }
+  }
+  // Copie locale (navigateur) : filet de sécurité hors-ligne / hors compte.
+  function mirrorWrite(uid, state, dirty){
+    try{ localStorage.setItem(LS_KEY, JSON.stringify({ uid: uid, dirty: !!dirty, state: state })); }catch(e){ /* stockage indisponible : on ignore */ }
+  }
+  function mirrorRead(){
+    try{ const raw = localStorage.getItem(LS_KEY); return raw ? JSON.parse(raw) : null; }catch(e){ return null; }
+  }
+  function restoreMirror(allowUser){
+    const m = mirrorRead();
+    if(!m || !m.state) return;
+    if(m.uid !== 'anon' && !allowUser) return;
+    applyingRemoteState = true;
+    try{ applyFullState(m.state); }
+    catch(e){ console.warn('MonCoach — copie locale illisible.', e); }
+    finally { applyingRemoteState = false; }
+  }
 
   // Ce qu'on sauvegarde en privé pour un compte : tout collectFullState()
   // SAUF les recettes, qui restent gérées exclusivement par l'API partagée
@@ -5709,24 +5857,115 @@ document.getElementById('loadDataInput').addEventListener('change', function(){
     document.getElementById('groupConnectedPanel').style.display = '';
     document.getElementById('groupConnectedName').textContent = name;
     document.getElementById('groupStatusHint').textContent = 'Vos recettes ajoutées et votre série de séances sont maintenant partagées avec le groupe.';
+    document.getElementById('saveLoadStatus').textContent = '☁️ Vos données (profil, programme, suivi, journal) sont enregistrées automatiquement dans votre compte. Le fichier ci-dessous est une copie de secours facultative.';
     document.getElementById('profileConnectedName').textContent = name;
   }
   function setDisconnectedUI(){
     document.getElementById('groupAuthForms').style.display = '';
     document.getElementById('groupConnectedPanel').style.display = 'none';
     document.getElementById('groupStatusHint').textContent = 'Connectez-vous pour partager vos recettes et votre série de séances avec le reste du groupe.';
+    document.getElementById('saveLoadStatus').textContent = '📱 Non connecté : vos données restent sur cet appareil. Connectez-vous pour les retrouver partout, ou gardez un fichier de secours avec le bouton ci-dessus.';
     document.getElementById('profileConnectedName').textContent = '';
   }
 
   async function doPrivateSaveNow(){
     const uid = currentUid;
     if(!uid) return;
+    if(saveInFlight){ resaveNeeded = true; return; }
+    if(!privateReady){
+      // Données en ligne pas encore lues : on n'écrit RIEN (ni en ligne, ni en copie locale),
+      // sinon un état vide pourrait écraser les vraies données.
+      setSync('wait', '⏳ Chargement de vos données en cours…');
+      return;
+    }
+    const payload = buildPrivatePayload();
+    mirrorWrite(uid, payload, true); // copie locale « à envoyer » tant que le serveur n'a pas confirmé
+    saveInFlight = true;
+    setSync('saving', '⏳ Enregistrement…');
     try{
-      await api('/api/private', { method: 'PUT', body: JSON.stringify(buildPrivatePayload()) });
+      await api('/api/private', { method: 'PUT', body: JSON.stringify(payload) });
+      lastKnownSavedAt = String(payload.savedAt || '');
+      mirrorWrite(uid, payload, false);
+      if(saveRetryTimer){ clearTimeout(saveRetryTimer); saveRetryTimer = null; }
+      setSync('ok', '☁️ Enregistré · ' + heure());
     }catch(err){
       console.warn("MonCoach — Sauvegarde privée : échec de l'enregistrement en ligne.", err);
+      setSync('err', '⚠️ Non enregistré — nouvel essai dans 15 s');
+      if(!saveRetryTimer){
+        saveRetryTimer = setTimeout(() => { saveRetryTimer = null; if(currentUid) doPrivateSaveNow(); }, 15000);
+      }
+    } finally {
+      saveInFlight = false;
+      if(resaveNeeded){ resaveNeeded = false; doPrivateSaveNow(); }
     }
   }
+
+  // Applique l'état reçu du serveur sans réécrire aussitôt ce qu'on vient de lire.
+  function applyServerState(data){
+    const keepRecipes = customRecipes; // les recettes viennent uniquement de l'API partagée "/api/recipes"
+    applyingRemoteState = true;
+    try{
+      applyFullState(data);
+    } finally {
+      customRecipes = keepRecipes;
+      recipesByNameIndex = null;
+      if(typeof renderMyRecipesList === 'function') renderMyRecipesList();
+      if(typeof refreshAllRecipeViews === 'function') refreshAllRecipeViews();
+      if(typeof renderMealPlanner === 'function') renderMealPlanner();
+      applyingRemoteState = false;
+    }
+  }
+
+  // Lecture des données privées à la connexion. Tant qu'elle n'a pas réussi,
+  // AUCUNE écriture en ligne n'est faite (rien ne peut être écrasé par erreur).
+  async function loadPrivateData(user){
+    try{
+      const priv = await api('/api/private');
+      if(currentUid !== user.uid) return;
+      const data = (priv && priv.data) || {};
+      let applied = data, pushLocal = false;
+      const m = mirrorRead();
+      // Modifications faites hors-ligne puis jamais envoyées : si elles sont plus récentes que le serveur, on les garde.
+      if(m && m.uid === user.uid && m.dirty && m.state && String(m.state.savedAt || '') > String(data.savedAt || '')){
+        applied = m.state; pushLocal = true;
+      }
+      if(applied && Object.keys(applied).length) applyServerState(applied);
+      lastKnownSavedAt = String(data.savedAt || '');
+      privateReady = true;
+      if(loadRetryTimer){ clearTimeout(loadRetryTimer); loadRetryTimer = null; }
+      setSync('ok', '☁️ Données chargées · ' + heure());
+      if(pushLocal || pendingPrivateSave) schedulePrivateSave();
+    }catch(err){
+      privateReady = false;
+      console.warn('MonCoach — Sauvegarde privée : lecture impossible, sauvegarde en ligne suspendue.', err);
+      setSync('err', '⚠️ Données en ligne illisibles — rien n\'est écrasé, nouvel essai…');
+      if(!loadRetryTimer){
+        loadRetryTimer = setTimeout(() => { loadRetryTimer = null; if(currentUid === user.uid) loadPrivateData(user); }, 8000);
+      }
+    }
+  }
+
+  // Si une autre version plus récente existe en ligne (autre appareil), on la reprend au retour sur l'app.
+  async function refreshPrivateIfNewer(){
+    if(!currentUid || !privateReady || pendingPrivateSave || saveInFlight) return;
+    if(Date.now() - lastRefreshCheck < 20000) return;
+    lastRefreshCheck = Date.now();
+    if(runningIntervalIds.size > 0 || document.body.classList.contains('focus-session')) return;
+    const uid = currentUid;
+    try{
+      const priv = await api('/api/private');
+      const d = priv && priv.data;
+      if(!d || !d.savedAt || currentUid !== uid) return;
+      if(String(d.savedAt) <= lastKnownSavedAt) return;
+      if(pendingPrivateSave || saveInFlight || runningIntervalIds.size > 0) return;
+      const tab = getActiveTabId();
+      applyServerState(d);
+      lastKnownSavedAt = String(d.savedAt);
+      if(tab) activateTab(tab);
+      setSync('ok', '☁️ Mis à jour depuis un autre appareil · ' + heure());
+    }catch(e){ /* tant pis, on réessaiera au prochain retour sur l'app */ }
+  }
+  document.addEventListener('visibilitychange', () => { if(!document.hidden) refreshPrivateIfNewer(); });
 
   // ---- Branchement sur l'état de connexion ----
   async function handleConnected(user){
@@ -5758,29 +5997,7 @@ document.getElementById('loadDataInput').addEventListener('change', function(){
       doPrivateSaveNow();
     };
 
-    // Restaure, à la connexion, le profil/programme/planning/suivi/journal
-    // sauvegardés en privé pour ce compte (jamais partagés avec le groupe),
-    // pour que tout soit disponible automatiquement sur n'importe quel
-    // appareil une fois connecté(e).
-    try{
-      const priv = await api('/api/private');
-      if(priv && priv.data && Object.keys(priv.data).length && currentUid === user.uid){
-        const keepRecipes = customRecipes; // les recettes viennent uniquement de l'API partagée "/api/recipes"
-        applyingRemoteState = true;
-        try{
-          applyFullState(priv.data);
-        } finally {
-          customRecipes = keepRecipes;
-          recipesByNameIndex = null;
-          if(typeof renderMyRecipesList === 'function') renderMyRecipesList();
-          if(typeof refreshAllRecipeViews === 'function') refreshAllRecipeViews();
-          if(typeof renderMealPlanner === 'function') renderMealPlanner();
-          applyingRemoteState = false;
-        }
-      }
-    }catch(err){
-      console.warn('MonCoach — Sauvegarde privée : lecture impossible, données locales conservées.', err);
-    }
+    await loadPrivateData(user);
 
     persistNewRecipe = function(recipe){
       api('/api/recipes', { method: 'POST', body: JSON.stringify(recipe) })
@@ -5871,22 +6088,44 @@ document.getElementById('loadDataInput').addEventListener('change', function(){
       overriddenRecipesCache = null;
     };
     persistStreakUpdate = function(){};
-    schedulePrivateSave = function(){};
+    privateReady = false;
+    lastKnownSavedAt = '';
+    if(saveRetryTimer){ clearTimeout(saveRetryTimer); saveRetryTimer = null; }
+    if(loadRetryTimer){ clearTimeout(loadRetryTimer); loadRetryTimer = null; }
+    // Hors compte : copie sur cet appareil uniquement (le navigateur la garde d'une visite à l'autre).
+    schedulePrivateSave = function(){
+      if(applyingRemoteState) return;
+      if(privateSaveTimer) clearTimeout(privateSaveTimer);
+      pendingPrivateSave = true;
+      privateSaveTimer = setTimeout(() => {
+        privateSaveTimer = null;
+        pendingPrivateSave = false;
+        mirrorWrite('anon', collectFullState(), false);
+      }, 1500);
+    };
+    flushPrivateSaveNow = function(){
+      if(!pendingPrivateSave) return;
+      if(privateSaveTimer){ clearTimeout(privateSaveTimer); privateSaveTimer = null; }
+      pendingPrivateSave = false;
+      mirrorWrite('anon', collectFullState(), false);
+    };
   }
 
   // ---- Session courante au chargement de la page ----
   try{
     const me = await api('/api/me');
     if(me && me.user) await handleConnected(me.user);
-    else handleDisconnected();
+    else { handleDisconnected(); restoreMirror(false); }
   }catch(err){
     console.warn('MonCoach — Groupe : impossible de vérifier la session en cours.', err);
     handleDisconnected();
+    restoreMirror(true);
   }
 
   // ---- Déconnexion (compte central) ----
   document.getElementById('groupSignOutBtn').addEventListener('click', async () => {
     try{ await fetch(COMPTE_URL + '/api/logout?app=' + COMPTE_APP, { method: 'POST', credentials: 'include' }); }catch(err){ /* on se déconnecte localement de toute façon */ }
+    try{ localStorage.removeItem(LS_KEY); }catch(e){}
     handleDisconnected();
   });
 })();
@@ -5896,6 +6135,871 @@ document.getElementById('loadDataInput').addEventListener('change', function(){
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function () { navigator.serviceWorker.register('/sw.js').catch(function () {}); });
 }
+</script>
+
+<div class="sync-pill" id="syncPill" role="status" aria-live="polite"></div>
+<div id="restBar" role="timer" aria-live="off">
+  <div class="rest-info"><div class="rest-label">Repos</div><div class="rest-time">0:00</div></div>
+  <button type="button" data-r="plus" aria-label="Ajouter 15 secondes">+15 s</button>
+  <button type="button" data-r="skip" aria-label="Passer le repos">Passer</button>
+  <button type="button" data-r="mute" aria-label="Couper le son et la vibration">🔔</button>
+  <div class="rest-prog"><i></i></div>
+</div>
+<div id="mcToast" role="status" aria-live="polite"></div>
+<div class="mc-modal" id="feelModal" hidden role="dialog" aria-modal="true" aria-labelledby="feelTitle">
+  <div class="mc-modal-box">
+    <h3 id="feelTitle">Comment était la séance ?</h3>
+    <p>Votre réponse sert à ajuster les prochaines séances.</p>
+    <div class="feel-row">
+      <button type="button" data-feel="easy">😌<span>Facile</span></button>
+      <button type="button" data-feel="ok">👍<span>Bien dosée</span></button>
+      <button type="button" data-feel="hard">🥵<span>Très dure</span></button>
+    </div>
+    <button type="button" class="feel-skip">Passer</button>
+  </div>
+</div>
+<script>
+/* ===================== MonCoach+ : améliorations (oct. 2026) =====================
+   Ajouts greffés par-dessus l'app existante, sans toucher à la logique de base :
+   - cycle de 4 semaines avec progression + semaine de décharge (planState)
+   - ressenti après séance qui ajuste la suite (feelAdj)
+   - bouton « Série faite » + repos automatique (bip, vibration, écran maintenu allumé)
+   - remplacement d'un exercice en un clic
+   - favoris et aliments récents dans le journal
+   - courbes séances / poids sur 1, 3, 6 mois ou tout
+   Les nouvelles données (plan, foodFavs, ressenti dans l'historique) voyagent avec la
+   sauvegarde existante (collectFullState / applyFullState). */
+(function(){
+  var PLAN_WEEKS = 4;
+  var PLAN_NAMES = ['Prise en main', 'Progression', 'Intensification', 'Décharge'];
+  var FEEL = {
+    easy: { e: '😌', l: 'Facile', s: 1 },
+    ok:   { e: '👍', l: 'Bien dosée', s: 0 },
+    hard: { e: '🥵', l: 'Très dure', s: -1 }
+  };
+
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]; }); }
+  function lsGet(k, d){ try{ var v = localStorage.getItem(k); return v == null ? d : v; }catch(e){ return d; } }
+  function lsSet(k, v){ try{ localStorage.setItem(k, v); }catch(e){} }
+
+  var foodFavs = [];
+  var planState = null;      // { start:'AAAA-MM-JJ', weeks:4 }
+  var viewWeek = null;       // semaine affichée (0..3) ; null = semaine en cours
+  var lastShown = [];        // programme tel qu'affiché (ajusté selon la semaine)
+  var muted = lsGet('mc_mute', '0') === '1';
+  var range = lsGet('mc_range', '3m');
+  if(['1m','3m','6m','all'].indexOf(range) < 0) range = '3m';
+
+  /* ---------- Sauvegarde : nouvelles données ---------- */
+  var _collect = collectFullState;
+  collectFullState = function(){
+    var s = _collect();
+    s.foodFavs = foodFavs;
+    s.plan = planState;
+    return s;
+  };
+  var _apply = applyFullState;
+  applyFullState = function(state){
+    if(state && typeof state === 'object'){
+      foodFavs = Array.isArray(state.foodFavs) ? state.foodFavs.filter(function(f){
+        return f && typeof f.name === 'string' && isFinite(f.kcal);
+      }).slice(0, 60) : [];
+      var okPlan = state.plan && /^\d{4}-\d{2}-\d{2}$/.test(String(state.plan.start || ''));
+      planState = okPlan ? { start: state.plan.start, weeks: PLAN_WEEKS } : null;
+      if(!planState && state.program && state.program.data) planState = { start: todayYMD(), weeks: PLAN_WEEKS };
+      viewWeek = null;
+    }
+    _apply(state);
+    renderQuick();
+    decorateJournalRows();
+  };
+
+  /* ---------- Cycle de 4 semaines ---------- */
+  function daysSince(ymd){
+    return Math.round((parseYMD(todayYMD()) - parseYMD(ymd)) / 86400000);
+  }
+  function curWeekIdx(){
+    if(!planState) return 0;
+    return Math.max(0, Math.floor(daysSince(planState.start) / 7));
+  }
+  function shownWeek(){
+    if(viewWeek != null) return viewWeek;
+    return Math.min(curWeekIdx(), PLAN_WEEKS - 1);
+  }
+  function feelAdj(){
+    var cutoff = Date.now() - 28 * 86400000;
+    var rec = workoutHistory.filter(function(h){
+      return h.feel && FEEL[h.feel] && new Date(h.ts).getTime() >= cutoff;
+    }).sort(function(a, b){ return new Date(b.ts) - new Date(a.ts); }).slice(0, 3);
+    if(rec.length < 2) return 0;
+    var avg = rec.reduce(function(a, h){ return a + FEEL[h.feel].s; }, 0) / rec.length;
+    return avg >= 0.6 ? 1 : (avg <= -0.6 ? -1 : 0);
+  }
+  function bumpRest(rest, plus){
+    var s = String(rest);
+    if(!/\d/.test(s)) return s;
+    return s.replace(/\d+/g, function(n){ return String(parseInt(n, 10) + plus); });
+  }
+  // Renvoie une copie de "sr" (séries / répétitions / repos / note) adaptée à la semaine w (0..3).
+  function adjustSr(sr, type, w, adj){
+    var out = Object.assign({}, sr);
+    var base = String(sr.sets).trim();
+    var tourM = /^(\d+)\s*tours?$/i.exec(base);
+    var setsNum = /^\d+$/.test(base) ? parseInt(base, 10) : null;
+    var sets = tourM ? parseInt(tourM[1], 10) : setsNum;
+    var fixedFmt = (type === 'hyrox_stations' || type === 'hyrox_simulation');
+    var repM = /^(\d+)(?:\s*-\s*(\d+))?$/.exec(String(sr.reps).trim());
+    var deload = (w === PLAN_WEEKS - 1);
+    var tip = '', adjTxt = '';
+    var ns = sets;
+
+    if(fixedFmt || sets == null){
+      tip = ['', 'visez plus de régularité sur chaque atelier.', 'réduisez un peu les pauses entre les ateliers.', 'semaine de décharge : allure tranquille, technique avant tout.'][w] || '';
+    } else if(tourM){
+      if(w === 2) ns = sets + 1;
+      if(deload) ns = Math.max(2, sets - 1);
+      tip = ['', 'même circuit, gardez le rythme sur tous les tours.', '+1 tour par rapport à la semaine 1.', 'semaine de décharge : un tour de moins, moins d\'intensité.'][w] || '';
+    } else {
+      if(w === 2) ns = sets + 1;
+      if(deload) ns = Math.max(2, Math.ceil(sets * 0.6));
+      if(repM && (w === 1 || w === 2)){
+        var lo = Math.min(20, parseInt(repM[1], 10) + 1);
+        var hi = repM[2] != null ? Math.min(20, parseInt(repM[2], 10) + 1) : null;
+        out.reps = hi != null ? (lo + '-' + hi) : String(lo);
+      }
+      tip = ['', '+1 répétition par série (ou +2,5 % de charge si c\'est facile).', '+1 série, gardez 1 à 2 répétitions en réserve.', 'semaine de décharge : moins de séries, charges allégées de 10 à 20 %.'][w] || '';
+    }
+    if(ns != null && !deload && !fixedFmt){
+      if(adj > 0){ ns += 1; adjTxt = 'ajusté selon vos ressentis : +1 ' + (tourM ? 'tour' : 'série'); }
+      if(adj < 0){
+        ns = Math.max(2, ns - 1);
+        out.rest = bumpRest(sr.rest, 15);
+        adjTxt = 'ajusté selon vos ressentis : −1 ' + (tourM ? 'tour' : 'série') + (/\d/.test(String(sr.rest)) ? ' et repos +15 s' : '');
+      }
+    }
+    if(ns != null && ns !== sets) out.sets = tourM ? (ns + ' tours') : String(ns);
+    out.note = String(sr.note || '') + (tip ? ' · Semaine ' + (w + 1) + '/' + PLAN_WEEKS + ' — ' + tip : '') + (adjTxt ? ' · ' + adjTxt : '');
+    return out;
+  }
+
+  function fmtShort(ymd){ return formatDateShort(parseYMD(ymd)); }
+
+  function renderPlanBanner(){
+    var box = $('planBanner');
+    if(!box) return;
+    if(!lastProgram || !lastProgram.length){ box.innerHTML = ''; return; }
+    var cur = curWeekIdx();
+    var w = shownWeek();
+    var finished = cur >= PLAN_WEEKS;
+    var dots = '';
+    for(var i = 0; i < PLAN_WEEKS; i++){
+      var cls = 'plan-dot' + (i === w ? ' on' : '') + (i < Math.min(cur, PLAN_WEEKS) ? ' past' : '');
+      dots += '<button type="button" class="' + cls + '" data-act="goto" data-w="' + i + '" aria-label="Voir la semaine ' + (i + 1) + '">' + (i + 1) + '</button>';
+    }
+    var adj = feelAdj();
+    var adjLine = adj > 0 ? '😌 Vos dernières séances étaient faciles : +1 série ajoutée.' :
+                  adj < 0 ? '🥵 Vos dernières séances étaient très dures : −1 série et repos +15 s.' : '';
+    var html = '<div class="plan-head"><div><div class="plan-title">📅 Semaine ' + (w + 1) + '/' + PLAN_WEEKS + ' — ' + PLAN_NAMES[w] + '</div>' +
+      '<div class="plan-sub">Cycle commencé le ' + fmtShort(planState.start) + (finished ? ' · terminé' : '') + '</div></div>' +
+      '<div class="plan-nav"><button type="button" class="plan-arrow" data-act="prev" aria-label="Semaine précédente"' + (w <= 0 ? ' disabled' : '') + '>◀</button>' + dots +
+      '<button type="button" class="plan-arrow" data-act="next" aria-label="Semaine suivante"' + (w >= PLAN_WEEKS - 1 ? ' disabled' : '') + '>▶</button></div></div>';
+    if(!finished && viewWeek != null && viewWeek !== Math.min(cur, PLAN_WEEKS - 1)){
+      html += '<div class="plan-line">👀 Aperçu — vous êtes en semaine ' + (cur + 1) + '. <button type="button" class="plan-link" data-act="today">Revenir à la semaine actuelle</button></div>';
+    }
+    if(adjLine) html += '<div class="plan-line">' + adjLine + '</div>';
+    if(finished){
+      html += '<div class="plan-done">🎉 Cycle de ' + PLAN_WEEKS + ' semaines terminé ! Vous pouvez en lancer un nouveau avec des exercices renouvelés, ou le recommencer tel quel.' +
+        '<div class="plan-actions"><button type="button" class="btn-accent-fill" data-act="newcycle">🔁 Nouveau cycle (exercices renouvelés)</button>' +
+        '<button type="button" class="secondary" data-act="restart">↺ Recommencer ce cycle</button></div></div>';
+    } else {
+      html += '<div class="plan-line plan-restart"><button type="button" class="plan-link" data-act="restart">↺ Recommencer le cycle à la semaine 1</button></div>';
+    }
+    box.innerHTML = html;
+  }
+  function rerenderWorkout(){
+    if(!lastProgram || !lastState) return;
+    var wasFocus = document.body.classList.contains('focus-session');
+    var focused = document.querySelector('#sportDays .day-card.focus-active');
+    var dayNo = focused ? focused.dataset.day : null;
+    renderWorkout(lastProgram, lastState.goal, lastState.level, lastState.days, lastState.targetZones);
+    if(wasFocus && dayNo){
+      var card = document.querySelector('#sportDays .day-card[data-day="' + dayNo + '"]');
+      if(card) enterFocusSession(card);
+    }
+  }
+  function startNewPlan(){
+    planState = { start: todayYMD(), weeks: PLAN_WEEKS };
+    viewWeek = null;
+  }
+  $('planBanner') && $('planBanner').addEventListener('click', function(ev){
+    var b = ev.target.closest('[data-act]');
+    if(!b || b.disabled) return;
+    var act = b.dataset.act;
+    if(act === 'goto') viewWeek = parseInt(b.dataset.w, 10);
+    else if(act === 'prev') viewWeek = Math.max(0, shownWeek() - 1);
+    else if(act === 'next') viewWeek = Math.min(PLAN_WEEKS - 1, shownWeek() + 1);
+    else if(act === 'today') viewWeek = null;
+    else if(act === 'restart'){ startNewPlan(); }
+    else if(act === 'newcycle'){
+      if(!lastState) return;
+      lastProgram = buildProgram(lastState.goal, lastState.level, lastState.days, lastState.equipSet, lastState.targetZones);
+      startNewPlan();
+    }
+    rerenderWorkout();
+    if(act === 'restart' || act === 'newcycle'){ schedulePrivateSave(); mcToast(act === 'newcycle' ? 'Nouveau cycle lancé — semaine 1.' : 'Cycle remis à la semaine 1.'); }
+  });
+
+  var _gen = generateWorkoutProgram;
+  generateWorkoutProgram = function(){
+    startNewPlan();
+    return _gen.apply(this, arguments);
+  };
+
+  /* ---------- Rendu du programme (semaine, séries, remplacement) ---------- */
+  var _render = renderWorkout;
+  renderWorkout = function(program, goal, level, days, targetZones){
+    if(!planState) planState = { start: todayYMD(), weeks: PLAN_WEEKS };
+    var w = shownWeek(), adj = feelAdj();
+    lastShown = program.map(function(d){ return Object.assign({}, d, { sr: adjustSr(d.sr, d.type, w, adj) }); });
+    _render(lastShown, goal, level, days, targetZones);
+    decorateWorkout();
+    renderPlanBanner();
+  };
+
+  function rowHtml(e, day){
+    var media = exerciseMedia(e);
+    var circuit = parseCircuitFormat(day.sr);
+    var restSeconds = parseRestSeconds(day.sr.rest);
+    var timerBtn = (!circuit && restSeconds) ?
+      '<button class="rest-timer-btn" data-seconds="' + restSeconds + '" data-label="⏱ Repos ' + day.sr.rest + '">⏱ Repos ' + day.sr.rest + '</button>' : '';
+    return '<div class="exo-row">' +
+      '<div class="exo-summary" role="button" tabindex="0" aria-expanded="false">' +
+      '<div class="exo-icon">' + media.small + '</div>' +
+      '<div class="exo-info"><div class="exo-name">' + e.n + '</div>' +
+      '<div class="exo-meta">' + day.sr.sets + ' séries × ' + day.sr.reps + (circuit ? '' : ' · repos ' + day.sr.rest) + '</div></div>' +
+      timerBtn + '<span class="exo-chevron">▾</span></div>' +
+      '<div class="exo-expand"><div class="exo-icon-big">' + media.big + '</div>' +
+      '<div class="exo-expand-label">' + e.n + '</div>' + youtubeWatchBtnHtml(e.photoKey || e.n) + '</div></div>';
+  }
+  function altsFor(day, exo){
+    var src = EXERCISES.find(function(x){ return x.n === exo.n; });
+    if(!src || !lastState) return [];
+    var eq = lastState.equipSet instanceof Set ? lastState.equipSet : new Set(lastState.equipSet || []);
+    var lvl = lastState.level;
+    var used = new Set(day.exos.map(function(e){ return e.n; }));
+    var list;
+    if(src.cardio){
+      list = EXERCISES.filter(function(e){ return e.cardio && equipOk(e, eq) && levelOk(e, lvl); });
+    } else {
+      list = pool(src.m, src.sub || null, eq, lvl);
+      if(!list.some(function(e){ return !used.has(e.n); }) && src.sub) list = pool(src.m, null, eq, lvl);
+    }
+    return list.filter(function(e){ return !used.has(e.n); });
+  }
+  function decorateRow(row, day, dayIdx, i){
+    var exo = day.exos[i];
+    if(!exo) return;
+    row.dataset.dayIdx = dayIdx;
+    row.dataset.exoIdx = i;
+    var circuit = parseCircuitFormat(day.sr);
+    var restSec = parseRestSeconds(day.sr.rest);
+    var nSets = /^\d+$/.test(String(day.sr.sets).trim()) ? parseInt(day.sr.sets, 10) : 0;
+    if(!row.querySelector('.set-track') && !circuit && restSec && nSets >= 2 && nSets <= 8){
+      var chips = '';
+      for(var k = 0; k < nSets; k++) chips += '<span class="set-chip"></span>';
+      var tr = document.createElement('div');
+      tr.className = 'set-track';
+      tr.dataset.sets = nSets;
+      tr.dataset.rest = restSec;
+      tr.dataset.done = 0;
+      tr.innerHTML = '<span class="set-chips" aria-hidden="true">' + chips + '</span>' +
+        '<button type="button" class="set-done-btn">✔ Série faite (0/' + nSets + ')</button>';
+      var sum = row.querySelector('.exo-summary');
+      sum.parentNode.insertBefore(tr, sum.nextSibling);
+    }
+    var expand = row.querySelector('.exo-expand');
+    if(expand && !expand.querySelector('.swap-btn') && altsFor(day, exo).length){
+      var sb = document.createElement('button');
+      sb.type = 'button';
+      sb.className = 'swap-btn';
+      sb.textContent = '🔄 Remplacer cet exercice';
+      expand.appendChild(sb);
+    }
+  }
+  function decorateWorkout(){
+    document.querySelectorAll('#sportDays .day-card').forEach(function(card){
+      var dayNo = parseInt(card.dataset.day, 10);
+      var idx = lastShown.findIndex(function(d){ return d.day === dayNo; });
+      if(idx < 0) return;
+      card.querySelectorAll('.exo-row').forEach(function(row, i){ decorateRow(row, lastShown[idx], idx, i); });
+    });
+  }
+
+  function swapExo(row, forcedExo){
+    var dayIdx = parseInt(row.dataset.dayIdx, 10), i = parseInt(row.dataset.exoIdx, 10);
+    var day = lastShown[dayIdx];
+    if(!day) return;
+    var progDay = lastProgram.find(function(d){ return d.day === day.day; });
+    if(!progDay) return;
+    var prev = progDay.exos[i];
+    var chosen = forcedExo;
+    if(!chosen){
+      var alts = altsFor(progDay, prev);
+      if(!alts.length){ mcToast('Pas d\'autre exercice compatible avec votre matériel.'); return; }
+      chosen = shuffle(alts)[0];
+    }
+    progDay.exos[i] = chosen;
+    var wasExpanded = row.classList.contains('expanded');
+    var b = row.querySelector('.rest-timer-btn');
+    if(b && activeRestTimers.has(b)){ clearInterval(activeRestTimers.get(b)); activeRestTimers.delete(b); }
+    var tmp = document.createElement('div');
+    tmp.innerHTML = rowHtml(chosen, day);
+    var fresh = tmp.firstChild;
+    row.parentNode.replaceChild(fresh, row);
+    if(wasExpanded){
+      fresh.classList.add('expanded');
+      var s = fresh.querySelector('.exo-summary');
+      if(s) s.setAttribute('aria-expanded', 'true');
+    }
+    decorateRow(fresh, day, dayIdx, i);
+    schedulePrivateSave();
+    mcToast('« ' + prev.n + ' » remplacé par « ' + chosen.n + ' ».', 'Annuler', function(){
+      var cur = document.querySelector('#sportDays .day-card[data-day="' + day.day + '"]');
+      var r = cur ? cur.querySelectorAll('.exo-row')[i] : null;
+      if(r) swapExo(r, prev);
+    });
+  }
+
+  /* ---------- Minuteur de repos automatique, vibration, écran allumé ---------- */
+  function vib(p){ try{ if(!muted && navigator.vibrate) navigator.vibrate(p); }catch(e){} }
+  var _beep = beep, _end = playEndSound, inEnd = false;
+  beep = function(f, d, dl){
+    if(muted) return;
+    if(!inEnd) vib(110);
+    return _beep.apply(this, arguments);
+  };
+  playEndSound = function(){
+    if(muted) return;
+    inEnd = true;
+    try{ vib([220, 90, 220]); _end(); } finally { inEnd = false; }
+  };
+
+  var rest = { end: 0, total: 0, id: null, hideT: null };
+  function restBar(){ return $('restBar'); }
+  function showRestBar(show){
+    var bar = restBar();
+    if(!bar) return;
+    bar.classList.toggle('on', !!show);
+    document.body.classList.toggle('rest-active', !!show);
+  }
+  function stopRest(silent){
+    if(rest.id){ clearInterval(rest.id); runningIntervalIds.delete(rest.id); rest.id = null; }
+    if(rest.hideT){ clearTimeout(rest.hideT); rest.hideT = null; }
+    if(silent) showRestBar(false);
+  }
+  function tickRest(){
+    var left = Math.ceil((rest.end - Date.now()) / 1000);
+    var bar = restBar();
+    if(left <= 0){
+      stopRest(false);
+      playEndSound();
+      if(bar){
+        bar.classList.add('done');
+        bar.querySelector('.rest-time').textContent = 'Go !';
+        bar.querySelector('.rest-label').textContent = 'C\'est reparti 💪';
+        bar.querySelector('.rest-prog i').style.width = '100%';
+      }
+      rest.hideT = setTimeout(function(){ rest.hideT = null; showRestBar(false); }, 4000);
+      return;
+    }
+    if(bar){
+      bar.querySelector('.rest-time').textContent = formatMMSS(left);
+      bar.querySelector('.rest-prog i').style.width = Math.max(0, Math.min(100, (1 - left / rest.total) * 100)) + '%';
+    }
+  }
+  function startRest(sec, label){
+    stopRest(true);
+    if(!muted){ try{ _beep(30, 10, 0); }catch(e){} } // « amorce » le son pendant le geste de l'utilisateur
+    rest.total = sec;
+    rest.end = Date.now() + sec * 1000;
+    var bar = restBar();
+    if(bar){
+      bar.classList.remove('done');
+      bar.querySelector('.rest-label').textContent = label || 'Repos';
+    }
+    showRestBar(true);
+    rest.id = trackInterval(setInterval(tickRest, 250));
+    tickRest();
+  }
+  var _clear = clearAllWorkoutTimers;
+  clearAllWorkoutTimers = function(){ _clear(); stopRest(true); };
+
+  function updateTracker(tr){
+    var total = parseInt(tr.dataset.sets, 10), done = parseInt(tr.dataset.done, 10) || 0;
+    tr.querySelectorAll('.set-chip').forEach(function(c, i){ c.classList.toggle('on', i < done); });
+    var btn = tr.querySelector('.set-done-btn');
+    btn.textContent = done >= total ? '↺ Recommencer' : '✔ Série faite (' + done + '/' + total + ')';
+    var row = tr.closest('.exo-row');
+    if(row) row.classList.toggle('exo-done', done >= total);
+  }
+  function onSetDone(btn){
+    var tr = btn.closest('.set-track');
+    var total = parseInt(tr.dataset.sets, 10), done = parseInt(tr.dataset.done, 10) || 0;
+    if(done >= total){ tr.dataset.done = 0; updateTracker(tr); return; }
+    done += 1;
+    tr.dataset.done = done;
+    updateTracker(tr);
+    var row = tr.closest('.exo-row');
+    var rows = Array.prototype.slice.call(row.parentNode.querySelectorAll('.exo-row'));
+    var idx = rows.indexOf(row);
+    var hasNext = idx < rows.length - 1;
+    var sec = parseInt(tr.dataset.rest, 10);
+    if(done < total){
+      startRest(sec, 'Repos — série ' + (done + 1) + '/' + total);
+    } else if(hasNext){
+      startRest(sec, 'Repos avant l\'exercice suivant');
+      var nx = rows[idx + 1];
+      if(nx && nx.scrollIntoView) nx.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } else {
+      stopRest(true);
+      mcToast('Dernier exercice terminé 🎉 Pensez à marquer la séance comme faite.');
+    }
+  }
+  if($('restBar')){
+    $('restBar').addEventListener('click', function(ev){
+      var b = ev.target.closest('[data-r]');
+      if(!b) return;
+      var a = b.dataset.r;
+      if(a === 'plus'){ rest.end += 15000; rest.total += 15; tickRest(); }
+      else if(a === 'skip'){ stopRest(true); }
+      else if(a === 'mute'){
+        muted = !muted;
+        lsSet('mc_mute', muted ? '1' : '0');
+        b.textContent = muted ? '🔕' : '🔔';
+        b.setAttribute('aria-label', muted ? 'Activer le son et la vibration' : 'Couper le son et la vibration');
+      }
+    });
+    var mb = $('restBar').querySelector('[data-r="mute"]');
+    if(mb) mb.textContent = muted ? '🔕' : '🔔';
+  }
+
+  var wl = null;
+  function wlRequest(){
+    try{
+      if('wakeLock' in navigator && !wl && document.visibilityState === 'visible'){
+        navigator.wakeLock.request('screen').then(function(l){
+          wl = l;
+          l.addEventListener('release', function(){ wl = null; });
+        }).catch(function(){ wl = null; });
+      }
+    }catch(e){ wl = null; }
+  }
+  function wlRelease(){ try{ if(wl){ wl.release(); wl = null; } }catch(e){} }
+  function wlCheck(){
+    var want = runningIntervalIds.size > 0 || document.body.classList.contains('focus-session');
+    if(want) wlRequest(); else wlRelease();
+  }
+  setInterval(wlCheck, 3000);
+  document.addEventListener('visibilitychange', function(){ if(!document.hidden) wlCheck(); });
+
+  // clics dans le programme : série faite / remplacer
+  var sd = $('sportDays');
+  if(sd) sd.addEventListener('click', function(ev){
+    var d = ev.target.closest('.set-done-btn');
+    if(d){ onSetDone(d); return; }
+    var s = ev.target.closest('.swap-btn');
+    if(s){ swapExo(s.closest('.exo-row')); return; }
+  });
+
+  /* ---------- Ressenti après séance ---------- */
+  var feelEntryId = null;
+  function openFeel(id){
+    var m = $('feelModal');
+    if(!m || !id) return;
+    feelEntryId = id;
+    m.hidden = false;
+    var first = m.querySelector('[data-feel]');
+    if(first) first.focus();
+  }
+  function closeFeel(){
+    var m = $('feelModal');
+    if(m) m.hidden = true;
+    feelEntryId = null;
+  }
+  function applyFeel(entry, f){
+    var before = feelAdj();
+    entry.feel = f || undefined;
+    if(!f) delete entry.feel;
+    var after = feelAdj();
+    renderTracking();
+    if(before !== after){
+      rerenderWorkout();
+      mcToast(after > 0 ? 'Ressenti noté — +1 série dès la prochaine séance.' :
+              after < 0 ? 'Ressenti noté — −1 série et repos +15 s pour vous soulager.' :
+              'Ressenti noté — le programme reste tel quel.');
+    } else if(f){
+      mcToast('Ressenti noté ' + FEEL[f].e);
+    }
+  }
+  var _mark = markSessionDone;
+  markSessionDone = function(btn){
+    _mark(btn);
+    var e = workoutHistory[workoutHistory.length - 1];
+    if(e){ e.w = Math.min(curWeekIdx(), PLAN_WEEKS - 1) + 1; openFeel(e.id); }
+  };
+  if($('feelModal')){
+    $('feelModal').addEventListener('click', function(ev){
+      if(ev.target === $('feelModal') || ev.target.closest('.feel-skip')){ closeFeel(); return; }
+      var b = ev.target.closest('[data-feel]');
+      if(!b) return;
+      var entry = workoutHistory.find(function(h){ return h.id === feelEntryId; });
+      closeFeel();
+      if(entry) applyFeel(entry, b.dataset.feel);
+    });
+    document.addEventListener('keydown', function(ev){
+      if(ev.key === 'Escape' && !$('feelModal').hidden) closeFeel();
+    });
+  }
+  function decorateHistory(){
+    document.querySelectorAll('#trackHistoryList .track-history-row').forEach(function(row){
+      var del = row.querySelector('.track-history-del');
+      if(!del || row.querySelector('.feel-badge')) return;
+      var entry = workoutHistory.find(function(h){ return h.id === del.dataset.id; });
+      if(!entry) return;
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'feel-badge';
+      b.dataset.id = entry.id;
+      b.title = 'Ressenti de la séance — toucher pour le changer';
+      b.setAttribute('aria-label', 'Ressenti : ' + (entry.feel && FEEL[entry.feel] ? FEEL[entry.feel].l : 'non renseigné') + ' (toucher pour changer)');
+      b.textContent = entry.feel && FEEL[entry.feel] ? FEEL[entry.feel].e : '＋😐';
+      row.insertBefore(b, del);
+    });
+  }
+  var hl = $('trackHistoryList');
+  if(hl) hl.addEventListener('click', function(ev){
+    var b = ev.target.closest('.feel-badge');
+    if(!b) return;
+    var entry = workoutHistory.find(function(h){ return h.id === b.dataset.id; });
+    if(!entry) return;
+    var order = ['', 'easy', 'ok', 'hard'];
+    var next = order[(order.indexOf(entry.feel || '') + 1) % order.length];
+    applyFeel(entry, next);
+  });
+
+  /* ---------- Favoris et récents (journal alimentaire) ---------- */
+  function favKey(f){ return String(f.name || '').toLowerCase().trim() + '|' + Math.round(f.kcal); }
+  function recentFoods(){
+    var seen = {}, out = [];
+    foodLog.slice().sort(function(a, b){ return new Date(b.ts) - new Date(a.ts); }).forEach(function(e){
+      var k = favKey(e);
+      if(seen[k] || out.length >= 12) return;
+      seen[k] = 1;
+      out.push(e);
+    });
+    return out;
+  }
+  function findQuick(k){
+    return foodFavs.find(function(f){ return favKey(f) === k; }) || recentFoods().find(function(f){ return favKey(f) === k; });
+  }
+  function addFood(it){
+    var dateEl = $('journalDate');
+    var date = (dateEl && dateEl.value) || todayYMD();
+    foodLog.push({
+      id: 'f' + Date.now() + Math.random().toString(36).slice(2, 8),
+      date: date, ts: new Date().toISOString(), name: it.name,
+      kcal: Math.round(it.kcal), protein: Math.round(it.protein || 0),
+      carbs: Math.round(it.carbs || 0), fat: Math.round(it.fat || 0)
+    });
+    showJournalStatus('✅ « ' + it.name + ' » ajouté au journal du ' + formatDateShort(parseYMD(date)) + '.');
+    renderFoodJournal();
+  }
+  function toggleFav(it){
+    var k = favKey(it);
+    var i = foodFavs.findIndex(function(f){ return favKey(f) === k; });
+    if(i >= 0) foodFavs.splice(i, 1);
+    else {
+      if(foodFavs.length >= 40){ mcToast('40 favoris maximum — retirez-en un d\'abord.'); return; }
+      foodFavs.push({ name: it.name, kcal: Math.round(it.kcal), protein: Math.round(it.protein || 0), carbs: Math.round(it.carbs || 0), fat: Math.round(it.fat || 0) });
+    }
+    renderQuick();
+    decorateJournalRows();
+    schedulePrivateSave();
+  }
+  function renderQuick(){
+    var box = $('journalQuick');
+    if(!box) return;
+    var favKeys = {};
+    foodFavs.forEach(function(f){ favKeys[favKey(f)] = 1; });
+    function chip(f){
+      var k = favKey(f), isFav = !!favKeys[k];
+      return '<span class="qchip"><button type="button" class="qadd" data-k="' + esc(k) + '" title="Ajouter au journal à la date choisie">＋ ' + esc(f.name) + ' <small>' + Math.round(f.kcal) + ' kcal</small></button>' +
+        '<button type="button" class="qstar" data-k="' + esc(k) + '" aria-pressed="' + isFav + '" aria-label="' + (isFav ? 'Retirer des favoris' : 'Ajouter aux favoris') + '">' + (isFav ? '⭐' : '☆') + '</button></span>';
+    }
+    var rec = recentFoods();
+    box.innerHTML =
+      '<div class="qrow"><div class="qtitle">⭐ Favoris</div><div class="qlist">' +
+      (foodFavs.length ? foodFavs.map(chip).join('') : '<span class="qhint">Touchez ☆ à côté d\'un aliment pour le garder ici.</span>') + '</div></div>' +
+      '<div class="qrow"><div class="qtitle">🕘 Récents</div><div class="qlist">' +
+      (rec.length ? rec.map(chip).join('') : '<span class="qhint">Vos derniers aliments notés apparaîtront ici.</span>') + '</div></div>';
+  }
+  var qb = $('journalQuick');
+  if(qb) qb.addEventListener('click', function(ev){
+    var a = ev.target.closest('.qadd'), s = ev.target.closest('.qstar');
+    var b = a || s;
+    if(!b) return;
+    var it = findQuick(b.dataset.k);
+    if(!it) return;
+    if(a) addFood(it); else toggleFav(it);
+  });
+  function decorateJournalRows(){
+    document.querySelectorAll('#journalList .track-history-row').forEach(function(row){
+      var del = row.querySelector('.track-history-del');
+      if(!del) return;
+      var old = row.querySelector('.row-star');
+      if(old) old.remove();
+      var e = foodLog.find(function(x){ return x.id === del.dataset.id; });
+      if(!e) return;
+      var isFav = foodFavs.some(function(f){ return favKey(f) === favKey(e); });
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'qstar row-star';
+      b.dataset.id = e.id;
+      b.setAttribute('aria-pressed', isFav);
+      b.setAttribute('aria-label', isFav ? 'Retirer des favoris' : 'Ajouter aux favoris');
+      b.textContent = isFav ? '⭐' : '☆';
+      row.insertBefore(b, del);
+    });
+  }
+  var jl = $('journalList');
+  if(jl) jl.addEventListener('click', function(ev){
+    var b = ev.target.closest('.row-star');
+    if(!b) return;
+    var e = foodLog.find(function(x){ return x.id === b.dataset.id; });
+    if(e) toggleFav(e);
+  });
+  var _rf = renderFoodJournal;
+  renderFoodJournal = function(){
+    _rf();
+    renderQuick();
+    decorateJournalRows();
+  };
+
+  /* ---------- Courbes séances / poids (1, 3, 6 mois, tout) ---------- */
+  var RANGE_LABELS = { '1m': '1 mois', '3m': '3 mois', '6m': '6 mois', 'all': 'Tout' };
+  function chipsHtml(){
+    return Object.keys(RANGE_LABELS).map(function(k){
+      return '<button type="button" class="range-chip' + (k === range ? ' on' : '') + '" data-range="' + k + '" aria-pressed="' + (k === range) + '">' + RANGE_LABELS[k] + '</button>';
+    }).join('');
+  }
+  function setRange(k){
+    range = k;
+    lsSet('mc_range', k);
+    renderRangeBar();
+    drawTrackChart();
+    drawWeightChart();
+  }
+  function renderRangeBar(){
+    var bar = $('chartRangeBar');
+    if(bar) bar.innerHTML = '<span class="range-label">Période :</span>' + chipsHtml();
+    document.querySelectorAll('.weight-range').forEach(function(w){ w.innerHTML = '<span class="range-label">Période :</span>' + chipsHtml(); });
+  }
+  var tr = $('tracking-results');
+  if(tr) tr.addEventListener('click', function(ev){
+    var b = ev.target.closest('.range-chip');
+    if(b) setRange(b.dataset.range);
+  });
+  function chartWidth(el, fallback){
+    var w = el && el.clientWidth ? el.clientWidth : fallback;
+    return Math.max(280, Math.min(760, w));
+  }
+  function niceStep(span, maxTicks){
+    var raw = span / maxTicks, mag = Math.pow(10, Math.floor(Math.log10(raw || 1)));
+    var f = raw / mag;
+    var s = f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10;
+    return s * mag;
+  }
+  function drawTrackChart(){
+    var el = $('trackChart');
+    if(!el) return;
+    var cur = startOfWeek(new Date());
+    var n;
+    if(range === '1m') n = 5;
+    else if(range === '3m') n = 13;
+    else if(range === '6m') n = 26;
+    else {
+      var first = workoutHistory.length ? Math.min.apply(null, workoutHistory.map(function(h){ return new Date(h.ts).getTime(); })) : Date.now();
+      n = Math.max(8, Math.min(52, Math.round((cur - startOfWeek(new Date(first))) / (7 * 86400000)) + 1));
+    }
+    var weeks = [];
+    for(var i = n - 1; i >= 0; i--){ var d = new Date(cur); d.setDate(d.getDate() - i * 7); weeks.push(d); }
+    var counts = weeks.map(function(w){
+      var k = weekKey(w);
+      return workoutHistory.filter(function(h){ return weekKey(new Date(h.ts)) === k; }).length;
+    });
+    var target = lastState && parseInt(lastState.days, 10) > 0 ? parseInt(lastState.days, 10) : 0;
+    var maxV = Math.max(3, target, Math.max.apply(null, counts));
+    var W = chartWidth(el, 360), H = 190, pl = 26, pr = 8, pt = 14, pb = 26;
+    var iw = W - pl - pr, ih = H - pt - pb, slot = iw / n, bw = Math.max(4, Math.min(34, slot * 0.64));
+    var y = function(v){ return pt + ih - (v / maxV) * ih; };
+    var step = maxV > 8 ? 2 : 1, grid = '';
+    for(var v = 0; v <= maxV; v += step){
+      grid += '<line x1="' + pl + '" x2="' + (W - pr) + '" y1="' + y(v).toFixed(1) + '" y2="' + y(v).toFixed(1) + '" stroke="var(--gridline)" stroke-width="1"' + (v === 0 ? '' : ' stroke-dasharray="2 4"') + '/>' +
+        '<text x="' + (pl - 6) + '" y="' + (y(v) + 3.5).toFixed(1) + '" text-anchor="end" font-size="10" fill="var(--text-muted)">' + v + '</text>';
+    }
+    var tick = Math.ceil(n / Math.max(3, Math.floor(iw / 58)));
+    var bars = '', labels = '';
+    counts.forEach(function(c, i){
+      var x = pl + i * slot + (slot - bw) / 2;
+      var h = c === 0 ? 2 : (c / maxV) * ih;
+      var ok = target ? c >= target : c > 0;
+      var lab = formatDateShort(weeks[i]);
+      bars += '<rect x="' + x.toFixed(1) + '" y="' + (pt + ih - h).toFixed(1) + '" width="' + bw.toFixed(1) + '" height="' + h.toFixed(1) + '" rx="3" fill="var(--accent)" opacity="' + (c === 0 ? '.25' : ok ? '1' : '.5') + '"><title>Semaine du ' + lab + ' : ' + c + ' séance(s)</title></rect>';
+      if(c > 0 && slot >= 16) bars += '<text x="' + (x + bw / 2).toFixed(1) + '" y="' + (pt + ih - h - 4).toFixed(1) + '" text-anchor="middle" font-size="10" font-weight="700" fill="var(--text-secondary)">' + c + '</text>';
+      if((n - 1 - i) % tick === 0) labels += '<text x="' + (x + bw / 2).toFixed(1) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="10" fill="var(--text-muted)">' + lab + '</text>';
+    });
+    var tline = target ? '<line x1="' + pl + '" x2="' + (W - pr) + '" y1="' + y(target).toFixed(1) + '" y2="' + y(target).toFixed(1) + '" stroke="var(--good)" stroke-width="1.5" stroke-dasharray="6 4"/>' +
+      '<text x="' + (W - pr) + '" y="' + (y(target) - 4).toFixed(1) + '" text-anchor="end" font-size="10" font-weight="700" fill="var(--good)">objectif ' + target + '/sem.</text>' : '';
+    el.style.cssText = 'display:block;height:auto;padding:0;border-bottom:none;';
+    el.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="' + H + '" role="img" aria-label="Séances par semaine sur la période" style="display:block;overflow:visible">' + grid + tline + bars + labels + '</svg>';
+    var note = $('trackChartNote');
+    if(note){
+      var total = counts.reduce(function(a, b){ return a + b; }, 0);
+      var avg = total / n;
+      var hit = target ? counts.filter(function(c){ return c >= target; }).length : 0;
+      note.textContent = total ? ('Sur ' + n + ' semaine(s) : ' + total + ' séance(s), soit ' + avg.toFixed(1).replace('.', ',') + ' par semaine' +
+        (target ? ' · objectif atteint ' + hit + ' semaine(s) sur ' + n : '') + '.') : 'Aucune séance enregistrée sur cette période.';
+    }
+  }
+  function drawWeightChart(){
+    var wrap = $('weightChartWrap');
+    if(!wrap || !weightHistory.length) return;
+    var sorted = weightHistory.slice().sort(function(a, b){ return new Date(a.ts) - new Date(b.ts); });
+    var cutoff = range === 'all' ? 0 : Date.now() - ({ '1m': 31, '3m': 92, '6m': 183 })[range] * 86400000;
+    var pts = sorted.filter(function(p){ return new Date(p.ts).getTime() >= cutoff; });
+    var head = '<div class="range-bar weight-range"></div>';
+    if(!pts.length){
+      wrap.innerHTML = head + '<p class="weight-empty">Aucune pesée sur cette période — essayez « 6 mois » ou « Tout ».</p>';
+      renderRangeBar();
+      return;
+    }
+    var W = chartWidth(wrap, 360), H = 210, pl = 40, pr = 12, pt = 14, pb = 28;
+    var iw = W - pl - pr, ih = H - pt - pb;
+    var ws = pts.map(function(p){ return p.weight; });
+    var mn = Math.min.apply(null, ws), mx = Math.max.apply(null, ws);
+    if(mx - mn < 1){ var mid = (mx + mn) / 2; mn = mid - 0.6; mx = mid + 0.6; }
+    var stepY = niceStep(mx - mn, 4);
+    var lo = Math.floor((mn - stepY * 0.2) / stepY) * stepY, hi = Math.ceil((mx + stepY * 0.2) / stepY) * stepY;
+    var t0 = new Date(pts[0].ts).getTime(), t1 = new Date(pts[pts.length - 1].ts).getTime();
+    var span = Math.max(1, t1 - t0);
+    var X = function(t){ return pts.length === 1 ? pl + iw / 2 : pl + ((t - t0) / span) * iw; };
+    var Y = function(v){ return pt + ih - ((v - lo) / (hi - lo)) * ih; };
+    var grid = '';
+    for(var v = lo; v <= hi + 1e-9; v += stepY){
+      grid += '<line x1="' + pl + '" x2="' + (W - pr) + '" y1="' + Y(v).toFixed(1) + '" y2="' + Y(v).toFixed(1) + '" stroke="var(--gridline)" stroke-width="1" stroke-dasharray="2 4"/>' +
+        '<text x="' + (pl - 6) + '" y="' + (Y(v) + 3.5).toFixed(1) + '" text-anchor="end" font-size="10" fill="var(--text-muted)">' + (Math.round(v * 10) / 10) + '</text>';
+    }
+    var coords = pts.map(function(p){ return { x: X(new Date(p.ts).getTime()), y: Y(p.weight), p: p }; });
+    var line = coords.map(function(c, i){ return (i ? 'L' : 'M') + c.x.toFixed(1) + ',' + c.y.toFixed(1); }).join(' ');
+    var area = line + ' L' + coords[coords.length - 1].x.toFixed(1) + ',' + (pt + ih) + ' L' + coords[0].x.toFixed(1) + ',' + (pt + ih) + ' Z';
+    var avgLine = '';
+    if(pts.length >= 5){
+      var sm = coords.map(function(c, i){
+        var a = Math.max(0, i - 2), s = 0, k = 0;
+        for(var j = a; j <= i; j++){ s += coords[j].p.weight; k++; }
+        return { x: c.x, y: Y(s / k) };
+      });
+      avgLine = '<path d="' + sm.map(function(c, i){ return (i ? 'L' : 'M') + c.x.toFixed(1) + ',' + c.y.toFixed(1); }).join(' ') + '" fill="none" stroke="var(--series-2)" stroke-width="2" stroke-dasharray="5 4"><title>Tendance (moyenne glissante)</title></path>';
+    }
+    var dots = coords.map(function(c){
+      return '<circle cx="' + c.x.toFixed(1) + '" cy="' + c.y.toFixed(1) + '" r="' + (pts.length > 40 ? 2.2 : 3.6) + '" fill="var(--accent)"><title>' + c.p.weight + ' kg — ' + formatDateShort(new Date(c.p.ts)) + '</title></circle>';
+    }).join('');
+    var nt = Math.max(2, Math.min(5, Math.floor(iw / 80))), xl = '';
+    for(var i = 0; i < nt; i++){
+      var t = t0 + (span * i) / (nt - 1);
+      if(pts.length === 1 && i > 0) break;
+      xl += '<text x="' + X(t).toFixed(1) + '" y="' + (H - 8) + '" text-anchor="' + (i === 0 ? 'start' : i === nt - 1 ? 'end' : 'middle') + '" font-size="10" fill="var(--text-muted)">' +
+        formatDateShort(new Date(t)) + '</text>';
+    }
+    var first = pts[0].weight, last = pts[pts.length - 1].weight, delta = last - first;
+    var goalInput = document.querySelector('input[name="goal"]:checked');
+    var g = goalInput ? goalInput.value : '';
+    var col = 'var(--text-secondary)';
+    if(Math.abs(delta) >= 0.05){
+      if((g === 'perte_de_poids' && delta < 0) || (g === 'muscle' && delta > 0)) col = 'var(--good)';
+      else if((g === 'perte_de_poids' && delta > 0) || (g === 'muscle' && delta < 0)) col = 'var(--danger)';
+    }
+    var f1 = function(x){ return (Math.round(x * 10) / 10).toString().replace('.', ','); };
+    wrap.innerHTML = head +
+      '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" height="' + H + '" role="img" aria-label="Évolution du poids sur la période" style="display:block;overflow:visible">' +
+      grid + '<path d="' + area + '" fill="var(--accent)" opacity=".09"/><path d="' + line + '" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round"/>' + avgLine + dots + xl + '</svg>' +
+      '<p class="chart-note">Sur la période : ' + f1(first) + ' → ' + f1(last) + ' kg (<strong style="color:' + col + '">' + (delta > 0 ? '+' : '') + f1(delta) + ' kg</strong>) · min ' + f1(mn) + ' · max ' + f1(mx) +
+      (pts.length >= 5 ? ' · <span style="color:var(--series-2)">- - -</span> tendance' : '') + '</p>';
+    renderRangeBar();
+  }
+
+  var _rt = renderTracking;
+  renderTracking = function(){
+    _rt();
+    decorateHistory();
+    drawTrackChart();
+  };
+  var _rw = renderWeightProgress;
+  renderWeightProgress = function(){
+    _rw();
+    drawWeightChart();
+  };
+  var _act = activateTab;
+  activateTab = function(id){
+    _act(id);
+    if(id === 'tracking-results') requestAnimationFrame(function(){ drawTrackChart(); drawWeightChart(); });
+  };
+  var rsT = null;
+  window.addEventListener('resize', function(){
+    clearTimeout(rsT);
+    rsT = setTimeout(function(){
+      var p = $('tracking-results');
+      if(p && p.classList.contains('active')){ drawTrackChart(); drawWeightChart(); }
+    }, 200);
+  });
+
+  /* ---------- Petit message flottant (avec action facultative) ---------- */
+  var toastT = null;
+  function mcToast(msg, actionLabel, fn){
+    var t = $('mcToast');
+    if(!t) return;
+    t.innerHTML = '<span></span>' + (actionLabel ? '<button type="button" class="mc-toast-act"></button>' : '');
+    t.firstChild.textContent = msg;
+    if(actionLabel){
+      var b = t.querySelector('.mc-toast-act');
+      b.textContent = actionLabel;
+      b.addEventListener('click', function(){ t.classList.remove('on'); if(fn) fn(); });
+    }
+    t.classList.add('on');
+    clearTimeout(toastT);
+    toastT = setTimeout(function(){ t.classList.remove('on'); }, actionLabel ? 7000 : 3800);
+  }
+
+  /* ---------- Premier affichage ---------- */
+  renderRangeBar();
+  renderQuick();
+  decorateJournalRows();
+  decorateHistory();
+  drawTrackChart();
+  drawWeightChart();
+  if(lastProgram && lastState) rerenderWorkout();
+
+  window.__mcPlus = {
+    adjustSr: adjustSr, feelAdj: feelAdj, curWeekIdx: curWeekIdx, shownWeek: shownWeek,
+    getPlan: function(){ return planState; }, setPlan: function(p){ planState = p; },
+    setViewWeek: function(w){ viewWeek = w; }, getFavs: function(){ return foodFavs; },
+    startRest: startRest, stopRest: stopRest, altsFor: altsFor, swapExo: swapExo,
+    getShown: function(){ return lastShown; }, setRange: setRange, getRest: function(){ return rest; },
+    isMuted: function(){ return muted; }
+  };
+})();
+
 </script>
 </body>
 </html>
