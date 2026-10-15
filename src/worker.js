@@ -137,6 +137,8 @@ export default {
 
       if (p.startsWith('/photos/') && req.method === 'GET') return await handlePhoto(req, env, p.slice('/photos/'.length));
 
+      if (p === '/api/envie' && req.method === 'POST') return await handleEnvie(req, env);
+
       if (p === '/api/carnet-send' && req.method === 'POST') return await handleCarnetSend(req, env);
 
       return env.ASSETS.fetch(req);
@@ -323,4 +325,192 @@ async function handleCarnetSend(req, env) {
   const ok = await env.LISTE.putPayload(user.email, Object.assign({}, payload, { lists }));
   if (!ok) return json({ error: 'no_carnet' }, { status: 404 });
   return json({ ok: true });
+}
+
+// ===================== « J'ai envie de… » : recette minceur générée par l'IA =====================
+// Workers AI (liaison env.AI). Réservé aux personnes connectées, limité par jour pour ménager
+// le quota gratuit. Les calories/macros sont CALCULÉES ici à partir des valeurs par ingrédient
+// (somme / 2 personnes), pas recopiées telles quelles depuis le texte du modèle.
+const ENVIE_MODELS = [
+  '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
+  '@cf/meta/llama-3.1-70b-instruct',
+  '@cf/meta/llama-3.1-8b-instruct-fast',
+];
+const ENVIE_DAILY_LIMIT = 20;
+const ENVIE_DIETS = ['vegetarien', 'vegan', 'sans_poisson', 'sans_lactose', 'sans_gluten', 'sans_fruits_a_coque'];
+const ENVIE_DIET_LABEL = {
+  vegetarien: 'végétarien (ni viande ni poisson)', vegan: 'vegan (aucun produit animal)', sans_poisson: 'sans poisson',
+  sans_lactose: 'sans lactose (aucun produit laitier)', sans_gluten: 'sans gluten', sans_fruits_a_coque: 'sans fruits à coque',
+};
+const ENVIE_CATS = ['petit-déjeuner', 'déjeuner/dîner', 'collation', 'dessert'];
+const ENVIE_SCHEMA = {
+  type: 'object',
+  properties: {
+    name: { type: 'string' },
+    category: { type: 'string' },
+    prep: { type: 'integer' },
+    classic_name: { type: 'string' },
+    classic_kcal: { type: 'integer' },
+    ingredients: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          name: { type: 'string' }, qty: { type: 'string' },
+          kcal: { type: 'number' }, protein: { type: 'number' }, carbs: { type: 'number' }, fat: { type: 'number' },
+        },
+        required: ['name', 'qty', 'kcal', 'protein', 'carbs', 'fat'],
+      },
+    },
+    steps: { type: 'array', items: { type: 'string' } },
+    tip: { type: 'string' },
+  },
+  required: ['name', 'category', 'prep', 'classic_name', 'classic_kcal', 'ingredients', 'steps', 'tip'],
+};
+
+function envieTexte(v, max) {
+  return String(v == null ? '' : v).replace(/[<>\u0000-\u001f]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
+}
+function envieNum(v, max) {
+  const n = Number(v);
+  return Number.isFinite(n) && n >= 0 ? Math.min(n, max) : 0;
+}
+
+// Transforme la réponse brute du modèle en recette au format de l'app, ou null si inutilisable.
+function envieNettoyer(raw, diets) {
+  let d = raw;
+  if (typeof d === 'string') {
+    const a = d.indexOf('{'), b = d.lastIndexOf('}');
+    if (a < 0 || b <= a) return null;
+    try { d = JSON.parse(d.slice(a, b + 1)); } catch (e) { return null; }
+  }
+  if (!d || typeof d !== 'object' || !Array.isArray(d.ingredients) || !Array.isArray(d.steps)) return null;
+  const ing = [], qty = [];
+  let kcal = 0, p = 0, c = 0, f = 0;
+  for (const it of d.ingredients.slice(0, 16)) {
+    if (!it || typeof it !== 'object') continue;
+    const nom = envieTexte(it.name, 60);
+    if (!nom) continue;
+    const ip = envieNum(it.protein, 200), ic = envieNum(it.carbs, 400), ifat = envieNum(it.fat, 200);
+    let ik = envieNum(it.kcal, 1500);
+    const parMacros = 4 * ip + 4 * ic + 9 * ifat;
+    // Calories incohérentes avec les macros (plus de 25 % d'écart) : on se fie aux macros.
+    if (!ik || (parMacros > 5 && Math.abs(ik - parMacros) / parMacros > 0.25)) ik = parMacros;
+    ing.push(nom); qty.push(envieTexte(it.qty, 40));
+    kcal += ik; p += ip; c += ic; f += ifat;
+  }
+  const steps = d.steps.map(s => envieTexte(s, 400)).filter(Boolean).slice(0, 10);
+  const name = envieTexte(d.name, 80);
+  if (ing.length < 3 || steps.length < 2 || !name || kcal < 40) return null;
+  // Les valeurs de la recette sont "pour 2 personnes" → par personne.
+  const parPers = x => Math.round(x / 2);
+  const cat = ENVIE_CATS.includes(d.category) ? d.category : 'déjeuner/dîner';
+  const diet = {};
+  for (const k of ENVIE_DIETS) diet[k] = diets.includes(k);
+  return {
+    recipe: {
+      n: name, cat, tags: ['perte_de_poids'],
+      kcal: parPers(kcal), p: parPers(p), c: parPers(c), f: parPers(f),
+      prep: Math.min(120, Math.max(5, Math.round(envieNum(d.prep, 120)) || 20)),
+      ing, qty, steps, diet,
+    },
+    classicName: envieTexte(d.classic_name, 80),
+    classicKcal: Math.round(envieNum(d.classic_kcal, 2500)),
+    tip: envieTexte(d.tip, 240),
+  };
+}
+
+async function envieQuota(env, uid, delta) {
+  await env.DB.prepare('CREATE TABLE IF NOT EXISTS envie_usage (uid TEXT NOT NULL, day TEXT NOT NULL, n INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (uid, day))').run();
+  const day = new Date().toISOString().slice(0, 10);
+  const row = await env.DB.prepare('INSERT INTO envie_usage (uid, day, n) VALUES (?, ?, ?) ON CONFLICT(uid, day) DO UPDATE SET n = MAX(0, n + ?) RETURNING n')
+    .bind(uid, day, Math.max(0, delta), delta).first();
+  return row ? row.n : 0;
+}
+
+async function envieAppelIA(env, messages) {
+  let derniere = null;
+  for (const model of ENVIE_MODELS) {
+    try {
+      const out = await env.AI.run(model, {
+        messages,
+        response_format: { type: 'json_schema', json_schema: ENVIE_SCHEMA },
+        max_tokens: 1800,
+        temperature: 0.6,
+      });
+      const brut = out && (out.response !== undefined ? out.response : out);
+      if (brut !== undefined && brut !== null && brut !== '') return { brut, model };
+    } catch (e) {
+      derniere = e;
+      console.error('Envie — modèle indisponible', model, e && e.message);
+    }
+  }
+  throw derniere || new Error('aucune réponse');
+}
+
+async function handleEnvie(req, env) {
+  const user = await getUtilisateurCourant(req, env);
+  const unauth = requireAuth(user); if (unauth) return unauth;
+  if (!env.AI) return json({ error: "L'IA n'est pas encore activée sur ce site." }, { status: 503 });
+  const body = await req.json().catch(() => null);
+  if (!body || typeof body !== 'object') return json({ error: 'Corps JSON invalide' }, { status: 400 });
+
+  const craving = envieTexte(body.craving, 80);
+  if (craving.length < 2) return json({ error: "Dis-moi ce qui te ferait envie (ex : hamburger)." }, { status: 400 });
+  const diets = (Array.isArray(body.diets) ? body.diets : []).filter(x => ENVIE_DIETS.includes(x));
+  const avoid = (Array.isArray(body.avoid) ? body.avoid : []).map(x => envieTexte(x, 30)).filter(Boolean).slice(0, 12);
+  const dejaVus = (Array.isArray(body.exclude) ? body.exclude : []).map(x => envieTexte(x, 80)).filter(Boolean).slice(0, 6);
+  const maxKcal = Math.min(700, Math.max(200, Math.round(Number(body.maxKcal) || 450)));
+
+  const n = await envieQuota(env, user.uid, 1);
+  if (n > ENVIE_DAILY_LIMIT) {
+    await envieQuota(env, user.uid, -1);
+    return json({ error: `Limite de ${ENVIE_DAILY_LIMIT} recettes IA par jour atteinte — reviens demain.` }, { status: 429 });
+  }
+
+  const contraintes = [];
+  if (diets.length) contraintes.push('Régime obligatoire : ' + diets.map(k => ENVIE_DIET_LABEL[k]).join(', ') + '.');
+  if (avoid.length) contraintes.push('Ingrédients INTERDITS : ' + avoid.join(', ') + '.');
+  if (dejaVus.length) contraintes.push('Propose quelque chose de DIFFÉRENT de : ' + dejaVus.join(' ; ') + '.');
+
+  const systeme =
+    "Tu es un coach nutrition français qui aide à garder le plaisir tout en perdant du poids. " +
+    "Tu inventes UNE recette minceur réaliste, simple à faire à la maison avec des ingrédients de supermarché, " +
+    "qui rassasie et ressemble le plus possible au plat dont la personne a envie (même esprit, même goût, version allégée : " +
+    "cuisson au four ou poêle antiadhésive, peu de matière grasse, viande maigre, légumes, féculents bien dosés, yaourt/fromage blanc à la place de la crème ou de la mayonnaise). " +
+    "Réponds uniquement par l'objet JSON demandé, en français.";
+  const consigne =
+    `Envie : « ${craving} ».\n` +
+    `Recette pour 2 personnes, MAXIMUM ${maxKcal} kcal par personne (soit ${maxKcal * 2} kcal au total), riche en protéines.\n` +
+    (contraintes.length ? contraintes.join('\n') + '\n' : '') +
+    "Pour CHAQUE ingrédient donne la quantité réelle pour 2 personnes (ex : « 300 g », « 2 », « 1 c. à soupe ») " +
+    "ET ses calories (kcal), protéines, glucides et lipides en grammes POUR CETTE QUANTITÉ (pas pour 100 g). " +
+    "Mets 5 à 11 ingrédients (huile, sel, épices comptés), 3 à 7 étapes courtes. " +
+    "category = l'un de : petit-déjeuner, déjeuner/dîner, collation, dessert. prep = minutes de préparation + cuisson. " +
+    "classic_name / classic_kcal = le plat classique dont on a envie et ses calories habituelles par portion. " +
+    "tip = un conseil d'une phrase pour garder le plaisir (accompagnement, portion…).";
+  const messages = [{ role: 'system', content: systeme }, { role: 'user', content: consigne }];
+
+  try {
+    let res = await envieAppelIA(env, messages);
+    let ok = envieNettoyer(res.brut, diets);
+    // Une seule relance si la réponse est inutilisable ou bien trop calorique.
+    if (!ok || ok.recipe.kcal > maxKcal * 1.3) {
+      const remarque = ok
+        ? `Ta recette fait ${ok.recipe.kcal} kcal par personne : c'est trop. Refais-la en dessous de ${maxKcal} kcal par personne (moins d'huile, de fromage, de féculents, plus de légumes et de protéines maigres).`
+        : "Ta réponse n'était pas exploitable. Réponds uniquement par l'objet JSON complet demandé.";
+      const res2 = await envieAppelIA(env, messages.concat([
+        { role: 'assistant', content: typeof res.brut === 'string' ? res.brut.slice(0, 3000) : JSON.stringify(res.brut).slice(0, 3000) },
+        { role: 'user', content: remarque },
+      ]));
+      const ok2 = envieNettoyer(res2.brut, diets);
+      if (ok2 && (!ok || ok2.recipe.kcal < ok.recipe.kcal)) { ok = ok2; res = res2; }
+    }
+    if (!ok) throw new Error('réponse inutilisable');
+    return json({ ok: true, recipe: ok.recipe, classicName: ok.classicName, classicKcal: ok.classicKcal, tip: ok.tip, model: res.model, usedToday: Math.min(n, ENVIE_DAILY_LIMIT), dailyLimit: ENVIE_DAILY_LIMIT });
+  } catch (e) {
+    console.error('Envie — échec', e && e.message);
+    await envieQuota(env, user.uid, -1).catch(() => {});
+    return json({ error: "L'IA n'a pas réussi à créer la recette. Réessaie dans un instant." }, { status: 502 });
+  }
 }
