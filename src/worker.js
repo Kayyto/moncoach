@@ -483,8 +483,11 @@ async function handleEnvie(req, env) {
     `Envie : « ${craving} ».\n` +
     `Recette pour 2 personnes, MAXIMUM ${maxKcal} kcal par personne (soit ${maxKcal * 2} kcal au total), riche en protéines.\n` +
     (contraintes.length ? contraintes.join('\n') + '\n' : '') +
-    "Pour CHAQUE ingrédient donne la quantité réelle pour 2 personnes (ex : « 300 g », « 2 », « 1 c. à soupe ») " +
-    "ET ses calories (kcal), protéines, glucides et lipides en grammes POUR CETTE QUANTITÉ (pas pour 100 g). " +
+    "IMPORTANT : toutes les quantités sont POUR 2 PERSONNES (donc le double d'une portion individuelle : " +
+    "viande, poisson ou tofu : 250 à 350 g au total ; féculents : 150 à 250 g crus au total ; légumes : 300 à 500 g au total). " +
+    "Pour CHAQUE ingrédient donne cette quantité totale pour 2 (ex : « 300 g », « 4 tranches », « 2 c. à soupe ») " +
+    "ET ses calories (kcal), protéines, glucides et lipides en grammes POUR CETTE QUANTITÉ TOTALE (pas pour 100 g, pas pour 1 personne). " +
+    "Exemple : {\"name\":\"blanc de poulet\",\"qty\":\"300 g\",\"kcal\":330,\"protein\":69,\"carbs\":0,\"fat\":4}. " +
     "Mets 5 à 11 ingrédients (huile, sel, épices comptés), 3 à 7 étapes courtes. " +
     "category = l'un de : petit-déjeuner, déjeuner/dîner, collation, dessert. prep = minutes de préparation + cuisson. " +
     "classic_name / classic_kcal = le plat classique dont on a envie et ses calories habituelles par portion. " +
@@ -495,16 +498,19 @@ async function handleEnvie(req, env) {
     let res = await envieAppelIA(env, messages);
     let ok = envieNettoyer(res.brut, diets);
     // Une seule relance si la réponse est inutilisable ou bien trop calorique.
-    if (!ok || ok.recipe.kcal > maxKcal * 1.3) {
-      const remarque = ok
-        ? `Ta recette fait ${ok.recipe.kcal} kcal par personne : c'est trop. Refais-la en dessous de ${maxKcal} kcal par personne (moins d'huile, de fromage, de féculents, plus de légumes et de protéines maigres).`
-        : "Ta réponse n'était pas exploitable. Réponds uniquement par l'objet JSON complet demandé.";
+    const troPetit = r => r && r.recipe.cat === 'déjeuner/dîner' && (r.recipe.kcal < 200 || r.recipe.p < 12);
+    if (!ok || ok.recipe.kcal > maxKcal * 1.3 || troPetit(ok)) {
+      const remarque = !ok
+        ? "Ta réponse n'était pas exploitable. Réponds uniquement par l'objet JSON complet demandé."
+        : ok.recipe.kcal > maxKcal * 1.3
+          ? `Ta recette fait ${ok.recipe.kcal} kcal par personne : c'est trop. Refais-la en dessous de ${maxKcal} kcal par personne (moins d'huile, de fromage, de féculents, plus de légumes et de protéines maigres).`
+          : `Ta recette ne fait que ${ok.recipe.kcal} kcal et ${ok.recipe.p} g de protéines par personne : les quantités sont trop petites. Rappel : les quantités sont pour 2 PERSONNES (ex : 300 g de viande ou poisson au total) et les valeurs nutritionnelles correspondent à cette quantité totale. Refais la recette complète.`;
       const res2 = await envieAppelIA(env, messages.concat([
         { role: 'assistant', content: typeof res.brut === 'string' ? res.brut.slice(0, 3000) : JSON.stringify(res.brut).slice(0, 3000) },
         { role: 'user', content: remarque },
       ]));
       const ok2 = envieNettoyer(res2.brut, diets);
-      if (ok2 && (!ok || ok2.recipe.kcal < ok.recipe.kcal)) { ok = ok2; res = res2; }
+      if (ok2 && (!ok || (troPetit(ok) ? !troPetit(ok2) && ok2.recipe.kcal <= maxKcal * 1.3 : ok2.recipe.kcal < ok.recipe.kcal))) { ok = ok2; res = res2; }
     }
     if (!ok) throw new Error('réponse inutilisable');
     return json({ ok: true, recipe: ok.recipe, classicName: ok.classicName, classicKcal: ok.classicKcal, tip: ok.tip, model: res.model, usedToday: Math.min(n, ENVIE_DAILY_LIMIT), dailyLimit: ENVIE_DAILY_LIMIT });
