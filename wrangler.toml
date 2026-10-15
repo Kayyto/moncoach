@@ -27,3 +27,7 @@ service = "kayto-compte"
 binding = "LISTE"
 service = "carnet-liste"
 entrypoint = "CarnetSync"
+
+# « J'ai envie de… » : recettes minceur générées par Workers AI
+[ai]
+binding = "AI"
