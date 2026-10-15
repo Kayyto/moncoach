@@ -892,6 +892,24 @@
   .chart-note{font-size:.82rem;color:var(--text-secondary);margin:6px 0 14px;}
 
   @media print{.sync-pill,#restBar,#mcToast,.mc-modal,.set-track,.swap-btn,#planBanner .plan-nav{display:none !important;}}
+
+  /* ===== J'ai envie de… ===== */
+  .envie-form{display:flex;gap:8px;margin:12px 0 8px;}
+  .envie-form input{flex:1;min-width:0;box-sizing:border-box;padding:10px 12px;border:1.5px solid var(--gridline);border-radius:9px;font-size:.92rem;font-family:inherit;color:var(--text-primary);}
+  .envie-form input:focus{outline:2px solid var(--accent);outline-offset:1px;}
+  .envie-chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px;}
+  .envie-chip{font-family:inherit;font-size:.82rem;font-weight:600;padding:7px 12px;border-radius:999px;cursor:pointer;min-height:36px;
+    background:var(--surface-2);color:var(--text-secondary);border:1.5px solid var(--gridline);}
+  .envie-chip:hover,.envie-chip:focus-visible{border-color:var(--accent);color:var(--accent-text);background:var(--accent-tint);}
+  .envie-max{display:flex;align-items:center;gap:8px;font-size:.82rem;color:var(--text-secondary);margin:4px 0;}
+  .envie-max select{font-family:inherit;}
+  .envie-h{margin:18px 0 6px;font-size:1rem;}
+  .envie-ai{margin-top:20px;padding-top:16px;border-top:1px dashed var(--gridline);}
+  .envie-ai[hidden],#envieLocal[hidden],#envieClose[hidden]{display:none;}
+  #envieAiOut{margin-top:12px;}
+  .envie-actions{margin-top:12px;}
+  .envie-est{margin:10px 0 0;}
+  @media(max-width:520px){.envie-form{flex-direction:column;} #envieAiBtn{width:100%;}}
 </style>
 </head>
 <body>
@@ -1138,6 +1156,7 @@
         </button>
         <div class="sidebar-group-body">
           <a href="#nutri-results" id="navNutri" class="sidebar-tab sidebar-subtab" data-panel="nutri-results"><span>Recettes</span></a>
+          <a href="#envie-results" id="navEnvie" class="sidebar-tab sidebar-subtab" data-panel="envie-results"><span>🍔 Envie de…</span></a>
           <a href="#mealplan-results" id="navMeal" class="sidebar-tab sidebar-subtab" data-panel="mealplan-results"><span>Repas</span></a>
           <a href="#journal-results" id="navJournal" class="sidebar-tab sidebar-subtab" data-panel="journal-results"><span>Journal alimentaire</span></a>
           <a href="#recipe-browser-results" id="navRecipeBrowser" class="sidebar-tab sidebar-subtab" data-panel="recipe-browser-results"><span>Parcourir toutes les recettes</span></a>
@@ -1310,6 +1329,36 @@
 
         <h3 style="margin:18px 0 8px;font-size:.95rem;">Aliments notés</h3>
         <div id="journalList"></div>
+      </section>
+
+      <section class="card tab-panel" id="envie-results">
+        <h2>🍔 J'ai envie de…</h2>
+        <p class="hint">Dis ce qui te fait envie : MonCoach cherche d'abord dans tes recettes légères, puis peut t'inventer une version minceur sur mesure avec l'IA.</p>
+        <form id="envieForm" class="envie-form" autocomplete="off">
+          <input type="search" id="envieInput" maxlength="60" placeholder="ex : hamburger, pizza, pâtes carbonara, chocolat…" aria-label="Ce qui te fait envie">
+          <button type="submit" class="btn-accent-fill">Chercher</button>
+        </form>
+        <div class="envie-chips" id="envieChips"></div>
+        <label class="envie-max">Calories max par personne
+          <select id="envieMax"><option value="350">350 kcal</option><option value="450" selected>450 kcal</option><option value="550">550 kcal</option><option value="650">650 kcal</option></select>
+        </label>
+        <p class="hint" id="envieHint" style="margin:6px 0 0;"></p>
+
+        <div id="envieLocal" hidden>
+          <h3 id="envieLocalHead" class="envie-h"></h3>
+          <p class="hint" id="envieLocalNote" style="margin:-4px 0 10px;"></p>
+          <div class="recipe-grid" id="envieGrid"></div>
+          <div id="envieClose" hidden>
+            <p class="hint" id="envieCloseNote" style="margin:14px 0 8px;"></p>
+            <div class="recipe-grid" id="envieCloseGrid"></div>
+          </div>
+        </div>
+
+        <div id="envieAiBox" class="envie-ai" hidden>
+          <button type="button" class="btn-accent-fill" id="envieAiBtn">✨ Créer une version minceur avec l'IA</button>
+          <p class="save-load-note" id="envieAiStatus"></p>
+          <div id="envieAiOut"></div>
+        </div>
       </section>
 
       <section class="card tab-panel" id="recipe-browser-results">
@@ -7000,6 +7049,262 @@ if ('serviceWorker' in navigator) {
   };
 })();
 
+</script>
+<script>
+/* ===== MonCoach : « J'ai envie de… » ===== */
+(function(){
+/* ---------- Recherche d'une envie dans les recettes (pur : testable hors navigateur) ---------- */
+var ENVIE_STOP = ['de','du','des','la','le','les','un','une','au','aux','a','avec','et','en','j','ai','jai','envie','manger','mange','mangerais','bien','sur','pour','ma','mon','d','l','ou','sans','bon','bonne','petit','petite','grand','grande'];
+var ENVIE_PATES = ['pates','spaghetti','tagliatelle','penne','macaroni','fusilli','linguine','farfalle','lasagne','carbonara','bolognaise'];
+var ENVIE_SYN = {
+  hamburger:['burger'], burger:['burger'], cheeseburger:['burger'], mcdo:['burger'],
+  pizza:['pizza','flammekueche','tarte flambee','calzone'], pizzas:['pizza'],
+  pates:ENVIE_PATES, pate:ENVIE_PATES, spaghetti:ENVIE_PATES, spaghettis:ENVIE_PATES, carbonara:['carbonara','pates'], bolognaise:['bolognaise','pates'],
+  lasagne:['lasagne','pates'], lasagnes:['lasagne','pates'], macaroni:['macaroni','pates'], gratin:['gratin'],
+  frites:['frites','potatoes','wedges','~pomme de terre','~patate douce'], frite:['frites','potatoes','wedges','~pomme de terre','~patate douce'],
+  chips:['chips','~pomme de terre'], patate:['patate douce','pomme de terre'],
+  chocolat:['chocolat','cacao','brownie','fondant'], nutella:['chocolat','noisette','cacao'], brownie:['brownie','chocolat'],
+  gateau:['gateau','cake','muffin','brownie','fondant','moelleux','cookie'], gateaux:['gateau','cake','muffin','brownie','cookie'],
+  cookie:['cookie','biscuit'], cookies:['cookie','biscuit'], biscuit:['biscuit','cookie'], dessert:['dessert'],
+  glace:['sorbet','nice cream','yaourt glace','skyr glace','granita','creme glacee'], glaces:['sorbet','nice cream','yaourt glace','skyr glace','granita'], sorbet:['sorbet','nice cream','granita'],
+  tacos:['tacos','wrap','tortilla','fajita','burrito','quesadilla'], burrito:['burrito','tortilla','wrap'], fajita:['fajita','tortilla','wrap'],
+  kebab:['kebab','pita','shawarma','gyros'], shawarma:['shawarma','kebab'],
+  sushi:['sushi','maki','poke','california'], poke:['poke','sushi'], maki:['maki','sushi'],
+  crepe:['crepe','pancake'], crepes:['crepe','pancake'], pancake:['pancake','crepe'], pancakes:['pancake','crepe'], gaufre:['gaufre','pancake','crepe'], gaufres:['gaufre','pancake'],
+  croissant:['croissant','brioche','viennoiserie','pain au chocolat'], viennoiserie:['croissant','brioche','pain perdu'], brioche:['brioche','pain perdu'],
+  fromage:['fromage','raclette','tartiflette','croque','fondue','~gratin'], raclette:['raclette','tartiflette','~gratin'], tartiflette:['tartiflette','raclette','~gratin'], fondue:['fondue','raclette','tartiflette'],
+  nuggets:['nuggets','poulet pane','poulet croustillant','tenders'], nugget:['nuggets','poulet pane','poulet croustillant'], tenders:['tenders','nuggets','poulet pane'],
+  sandwich:['sandwich','wrap','croque','panini','bagel'], panini:['panini','sandwich','croque'], bagel:['bagel','sandwich'], croque:['croque','sandwich'],
+  quiche:['quiche','tarte'], tarte:['tarte','quiche','crumble'], hotdog:['hot dog','saucisse'], saucisse:['saucisse','hot dog'],
+  poulet:['poulet'], boeuf:['boeuf'], steak:['steak','boeuf'], riz:['riz'], curry:['curry'], risotto:['risotto','riz'],
+  pain:['pain','tartine','toast'], tiramisu:['tiramisu','~mascarpone'], cheesecake:['cheesecake','~fromage blanc'],
+  mousse:['mousse'], creme:['creme','mousse','panna cotta','flan'], flan:['flan','creme'], pudding:['pudding','creme','riz au lait'],
+  falafel:['falafel','pois chiche'], houmous:['houmous','pois chiche'], raviolis:['ravioli','pates'], ravioli:['ravioli','pates'],
+  nems:['nems','rouleaux'], nem:['nems','rouleaux'], rouleaux:['rouleaux','nems'], wok:['wok','nouilles'], nouilles:['nouilles','wok'], ramen:['ramen','nouilles'],
+  cafe:['cafe','tiramisu']
+};
+
+function envieNorm(s){ return String(s == null ? '' : s).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[’']/g, ' ').trim(); }
+
+// "j'ai envie d'un hamburger" -> [['burger']] ; "pâtes carbonara" -> [[pates...],[carbonara,pates]]
+function envieGroups(text){
+  var words = envieNorm(text).split(/[^a-z0-9]+/).filter(function(w){ return w && ENVIE_STOP.indexOf(w) < 0; });
+  var groups = [];
+  words.forEach(function(w){
+    var sing = w.length > 3 && /s$/.test(w) ? w.slice(0, -1) : w;
+    var known = ENVIE_SYN[w] || ENVIE_SYN[sing];
+    var g = (known || [sing]).slice();
+    g.known = !!known;
+    groups.push(g);
+  });
+  return groups.slice(0, 4);
+}
+
+function envieScore(recipe, groups){
+  var nom = envieNorm(recipe.n), ings = (recipe.ing || []).map(envieNorm).join(' | ');
+  var total = 0, matched = 0, nameHit = false;
+  groups.forEach(function(g){
+    var best = 0;
+    g.forEach(function(raw, i){
+      var weak = raw.charAt(0) === '~';           // "~xxx" : ne compte que dans les ingrédients
+      var stem = weak ? raw.slice(1) : raw;
+      var w = i === 0 ? 1 : 0.8; // le terme principal compte un peu plus que ses synonymes
+      if(!weak && nom.indexOf(stem) >= 0){ best = Math.max(best, 4 * w); nameHit = true; }
+      else if(ings.indexOf(stem) >= 0){ best = Math.max(best, 1.5 * w); }
+    });
+    if(best > 0){ total += best; matched++; }
+  });
+  if(!matched) return { score: 0, nameHit: false };
+  if(matched === groups.length) total += 2;
+  if(/(veloute|soupe|potage)/.test(nom) && !(groups.join(' ').match(/veloute|soupe|potage/))) total *= 0.4;
+  return { score: total, nameHit: nameHit };
+}
+
+// recipes : toutes les recettes ; opts : { maxKcal, ok(recipe) -> bool (régime/exclusions) }
+function envieSearch(text, recipes, opts){
+  var groups = envieGroups(text);
+  var res = { groups: groups, slim: [], close: [], ref: null };
+  if(!groups.length) return res;
+  var maxKcal = (opts && opts.maxKcal) || 450;
+  var okFn = (opts && opts.ok) || function(){ return true; };
+  var scored = [];
+  var freeText = groups.every(function(g){ return !g.known; });
+  recipes.forEach(function(r){
+    var s = envieScore(r, groups);
+    // Mot connu (burger, pizza…) : le nom de la recette doit correspondre ; mot libre (saumon…) : les ingrédients comptent aussi.
+    if(s.score > 0 && (s.nameHit || freeText)) scored.push({ r: r, score: s.score, nameHit: s.nameHit });
+  });
+  var isSlim = function(r){ return r.kcal <= maxKcal; };
+  var byScore = function(a, b){ return (b.score - a.score) || (a.r.kcal - b.r.kcal); };
+  // Référence "version classique" : la recette la plus proche de l'envie qui n'est pas une recette minceur.
+  var mainWord = groups[0] && groups[0][0].replace(/^~/, '');
+  var refs = scored.filter(function(x){ return x.nameHit && !isSlim(x.r) && envieNorm(x.r.n).indexOf(mainWord) >= 0; })
+    .sort(function(a, b){
+      var ca = (a.r.tags || []).indexOf('classique') >= 0 ? 1 : 0, cb = (b.r.tags || []).indexOf('classique') >= 0 ? 1 : 0;
+      return (cb - ca) || byScore(a, b);
+    });
+  if(refs.length) res.ref = refs[0].r;
+  res.slim = scored.filter(function(x){ return isSlim(x.r) && okFn(x.r); }).sort(byScore).slice(0, 6).map(function(x){ return x.r; });
+  // Trop peu de réponses minceur : on montre aussi les plus proches (plus caloriques) pour comparer.
+  if(res.slim.length < 3){
+    res.close = scored.filter(function(x){ return !isSlim(x.r) && x.nameHit && okFn(x.r); }).sort(byScore).slice(0, 3 - res.slim.length + 1).map(function(x){ return x.r; });
+  }
+  return res;
+}
+
+  /* ---------- Interface ---------- */
+  var QUICK = [['🍔','hamburger'],['🍕','pizza'],['🍝','pâtes carbonara'],['🍟','frites'],['🍫','chocolat'],['🍰','gâteau'],['🌮','tacos'],['🥐','croissant'],['🍦','glace'],['🍣','sushi'],['🧀','raclette'],['🥞','crêpes']];
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function clean(s){ return String(s == null ? '' : s).replace(/[<>]/g, ' '); }
+
+  var aiState = null;      // dernière recette générée { recipe, classicName, classicKcal, tip }
+  var aiSeen = [];         // noms déjà proposés pour cette envie (pour demander autre chose)
+  var aiBusy = false;
+  var lastCraving = '';
+
+  // « j'ai envie d'un hamburger » -> « hamburger »
+  function tidy(t){ return String(t || '').trim().replace(/^(j['’ ]?ai\s+)?envie\s+(d['’]\s*|de\s+|du\s+|des\s+)?(un\s+|une\s+|le\s+|la\s+|les\s+)?/i, '').replace(/^(d['’]\s*)?(un\s+|une\s+)/i, '').trim(); }
+  function maxKcal(){ return parseInt($('envieMax').value, 10) || 450; }
+  function curOk(){
+    var diets = getDietFilters(), excl = getExcludedWords();
+    return function(r){ return matchesDiet(r, diets) && matchesExclusions(r, excl); };
+  }
+
+  function addCompare(gridId, ref){
+    if(!ref) return;
+    var grid = $(gridId);
+    grid.querySelectorAll('.recipe-card').forEach(function(card){
+      var rec = findRecipeByName(card.getAttribute('data-recipe-name'));
+      if(!rec || rec.kcal > ref.kcal - 80) return;
+      var d = document.createElement('div');
+      d.className = 'recipe-match';
+      d.textContent = '−' + (ref.kcal - rec.kcal) + ' kcal par rapport à « ' + ref.n + ' » (' + ref.kcal + ' kcal)';
+      var meta = card.querySelector('.recipe-meta');
+      if(meta) meta.insertAdjacentElement('afterend', d);
+    });
+  }
+
+  function renderLocal(text){
+    var res = envieSearch(text, allRecipes(), { maxKcal: maxKcal(), ok: curOk() });
+    var box = $('envieLocal');
+    box.hidden = false;
+    var head = $('envieLocalHead'), note = $('envieLocalNote');
+    if(!res.groups.length){ box.hidden = true; return res; }
+    if(res.slim.length){
+      head.textContent = '🥗 Dans tes recettes : ' + res.slim.length + ' idée' + (res.slim.length > 1 ? 's' : '') + ' légère' + (res.slim.length > 1 ? 's' : '');
+      note.textContent = 'Jusqu’à ' + maxKcal() + ' kcal par personne, compatibles avec ton profil.';
+      renderRecipeCards(res.slim, 'envieGrid');
+      addCompare('envieGrid', res.ref);
+    } else {
+      head.textContent = '🥗 Aucune recette légère de ce genre dans tes recettes';
+      note.textContent = 'Pas de souci : l’IA peut t’en inventer une (bouton ci-dessous).';
+      $('envieGrid').innerHTML = '';
+    }
+    var closeBox = $('envieClose');
+    if(res.close.length){
+      closeBox.hidden = false;
+      $('envieCloseNote').textContent = res.slim.length ? 'Plus caloriques, pour comparer :' : 'Les plus proches de ton envie (plus caloriques que ta limite) :';
+      renderRecipeCards(res.close, 'envieCloseGrid');
+    } else { closeBox.hidden = true; $('envieCloseGrid').innerHTML = ''; }
+    return res;
+  }
+
+  function search(text){
+    text = tidy(text) || String(text || '').trim();
+    if(text.length < 2){ $('envieHint').textContent = 'Écris ce qui te ferait envie, par exemple « hamburger ».'; return; }
+    $('envieHint').textContent = '';
+    if(envieNorm(text) !== envieNorm(lastCraving)){ aiState = null; aiSeen = []; $('envieAiOut').innerHTML = ''; $('envieAiStatus').textContent = ''; }
+    lastCraving = text;
+    renderLocal(text);
+    $('envieAiBox').hidden = false;
+    $('envieAiBtn').textContent = '✨ Créer une version minceur de « ' + text.slice(0, 40) + ' » avec l’IA';
+  }
+
+  function aiCard(){
+    var out = $('envieAiOut');
+    if(!aiState){ out.innerHTML = ''; return; }
+    var r = aiState.recipe;
+    var tmp = document.createElement('div');
+    tmp.id = 'envieAiGrid'; tmp.className = 'recipe-grid';
+    out.innerHTML = '';
+    out.appendChild(tmp);
+    renderRecipeCards([Object.assign({}, r, { n: clean(r.n), ing: r.ing.map(clean), qty: (r.qty || []).map(clean), steps: (r.steps || []).map(clean) })], 'envieAiGrid');
+    var card = tmp.querySelector('.recipe-card');
+    var badge = document.createElement('div');
+    badge.className = 'recipe-match';
+    var cmp = aiState.classicKcal && aiState.classicKcal > r.kcal + 40
+      ? '✨ Créée par l’IA · −' + (aiState.classicKcal - r.kcal) + ' kcal par rapport à ' + (aiState.classicName ? '« ' + clean(aiState.classicName) + ' »' : 'la version classique') + ' (≈ ' + aiState.classicKcal + ' kcal)'
+      : '✨ Créée par l’IA';
+    badge.textContent = cmp;
+    card.insertBefore(badge, card.firstChild);
+    var note = document.createElement('p');
+    note.className = 'hint envie-est';
+    note.textContent = 'Calories et macros estimées (à ±15 %). ' + (aiState.tip ? clean(aiState.tip) : '');
+    card.appendChild(note);
+    var row = document.createElement('div');
+    row.className = 'btn-row envie-actions';
+    row.innerHTML = '<button type="button" class="btn-accent-fill" id="envieSaveBtn">💾 Enregistrer dans mes recettes</button><button type="button" class="secondary" id="envieAgainBtn">🔄 Une autre idée</button>';
+    card.appendChild(row);
+    $('envieSaveBtn').addEventListener('click', saveAi);
+    $('envieAgainBtn').addEventListener('click', function(){ generate(); });
+  }
+
+  function generate(){
+    if(aiBusy) return;
+    var text = lastCraving || $('envieInput').value.trim();
+    if(text.length < 2){ $('envieHint').textContent = 'Écris d’abord ce qui te ferait envie.'; return; }
+    aiBusy = true;
+    var btn = $('envieAiBtn'), st = $('envieAiStatus');
+    btn.disabled = true;
+    st.className = 'save-load-note';
+    st.textContent = '⏳ L’IA cherche une version légère… (10 à 25 secondes)';
+    var body = { craving: text, maxKcal: maxKcal(), diets: getDietFilters(), avoid: getExcludedWords(), exclude: aiSeen.slice(-5) };
+    fetch('/api/envie', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify(body) })
+      .then(function(res){ return res.json().catch(function(){ return {}; }).then(function(d){ return { status: res.status, d: d }; }); })
+      .then(function(x){
+        if(x.status === 401){ st.textContent = '🔒 Connecte-toi (bouton « Mon profil ») pour utiliser l’IA.'; return; }
+        if(x.status !== 200 || !x.d || !x.d.recipe){ st.textContent = '⚠️ ' + ((x.d && x.d.error) || 'Impossible de créer la recette pour le moment.'); return; }
+        aiState = { recipe: x.d.recipe, classicName: x.d.classicName, classicKcal: x.d.classicKcal, tip: x.d.tip };
+        if(aiSeen.indexOf(x.d.recipe.n) < 0) aiSeen.push(x.d.recipe.n);
+        st.textContent = x.d.usedToday ? '(' + x.d.usedToday + ' / ' + x.d.dailyLimit + ' recettes IA aujourd’hui)' : '';
+        aiCard();
+        var c = $('envieAiOut'); if(c && c.scrollIntoView) c.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      })
+      .catch(function(){ st.textContent = '⚠️ Pas de connexion : réessaie dans un instant.'; })
+      .then(function(){ aiBusy = false; btn.disabled = false; });
+  }
+
+  function saveAi(){
+    if(!aiState) return;
+    var r = aiState.recipe;
+    var name = clean(r.n).trim() || 'Recette minceur IA', base = name, i = 2;
+    while(findRecipeByName(name)){ name = base + ' (' + i + ')'; i++; }
+    var rec = Object.assign({}, r, {
+      n: name, ing: r.ing.map(clean), qty: (r.qty || []).map(clean), steps: (r.steps || []).map(clean),
+      custom: true, id: 'r' + Date.now() + Math.random().toString(36).slice(2, 8)
+    });
+    persistNewRecipe(rec);
+    recipesByNameIndex = null;
+    renderMyRecipesList();
+    refreshAllRecipeViews();
+    var b = $('envieSaveBtn');
+    if(b){ b.disabled = true; b.textContent = '✅ Enregistrée dans « Ajouter mes recettes »'; }
+  }
+
+  /* ---------- Branchements ---------- */
+  if(typeof TAB_PANEL_IDS !== 'undefined' && TAB_PANEL_IDS.indexOf('envie-results') < 0) TAB_PANEL_IDS.push('envie-results');
+  $('envieChips').innerHTML = QUICK.map(function(q){ return '<button type="button" class="envie-chip" data-q="' + esc(q[1]) + '">' + q[0] + ' ' + esc(q[1]) + '</button>'; }).join('');
+  $('envieChips').addEventListener('click', function(ev){
+    var b = ev.target.closest('.envie-chip'); if(!b) return;
+    $('envieInput').value = b.getAttribute('data-q');
+    search(b.getAttribute('data-q'));
+  });
+  $('envieForm').addEventListener('submit', function(ev){ ev.preventDefault(); search($('envieInput').value); });
+  $('envieMax').addEventListener('change', function(){ if(lastCraving) renderLocal(lastCraving); });
+  $('envieAiBtn').addEventListener('click', generate);
+  window.__mcEnvie = { search: search, getState: function(){ return aiState; }, generate: generate };
+})();
 </script>
 </body>
 </html>
