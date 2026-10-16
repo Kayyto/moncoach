@@ -4956,6 +4956,17 @@ function renderMealPlanner(){
   mealPlan.forEach(day => MEAL_SLOTS.forEach(s => { if(day[s]) filledCount++; }));
   document.getElementById('mealPlanBadge').textContent = filledCount ? `${filledCount} repas planifiés` : 'aucun repas planifié';
 
+  // Conserve ce qui est en cours de saisie (texte non validé, focus, curseur) :
+  // un redessin déclenché en arrière-plan ne doit jamais l'effacer.
+  const keptInputs = {};
+  let keptFocus = null;
+  grid.querySelectorAll('.meal-slot-input').forEach(inp => {
+    const k = inp.dataset.day + '|' + inp.dataset.slot;
+    if(inp.value) keptInputs[k] = inp.value;
+    if(document.activeElement === inp){
+      keptFocus = { k: k, s: inp.selectionStart, e: inp.selectionEnd };
+    }
+  });
   grid.innerHTML = WEEK_DAY_LABELS.map((dayLabel, d) => {
     const rows = MEAL_SLOTS.map(slot => {
       const recipeName = mealPlan[d][slot];
@@ -4976,6 +4987,13 @@ function renderMealPlanner(){
     }).join('');
     return `<div class="meal-day-card"><h3 style="margin:0 0 6px;font-size:1rem;">${dayLabel}</h3>${rows}</div>`;
   }).join('');
+  grid.querySelectorAll('.meal-slot-input').forEach(inp => {
+    const k = inp.dataset.day + '|' + inp.dataset.slot;
+    if(keptInputs[k] != null) inp.value = keptInputs[k];
+    if(keptFocus && keptFocus.k === k){
+      try{ inp.focus({ preventScroll: true }); inp.setSelectionRange(keptFocus.s, keptFocus.e); }catch(e){}
+    }
+  });
 
   renderTodayView();
   schedulePrivateSave();
@@ -5851,11 +5869,16 @@ document.getElementById('loadDataInput').addEventListener('change', function(){
     }
   });
 
+  let lastGroupSig = null;
+  let lastRecipesSig = null;
   async function refreshGroupData(){
     try{
       const data = await api('/api/group');
       const membersNext = {};
       (data.members || []).forEach(m => { membersNext[m.uid] = { name: m.name, isAdmin: !!m.isAdmin }; });
+      const sig = JSON.stringify([membersNext, data.streaks || {}, new Date().toDateString()]);
+      if(sig === lastGroupSig) return; // rien n'a changé : on ne redessine pas (évite de fermer ce que l'on fait)
+      lastGroupSig = sig;
       membersCache = membersNext;
       streaksCache = data.streaks || {};
       renderGroupLeaderboard();
@@ -5865,16 +5888,23 @@ document.getElementById('loadDataInput').addEventListener('change', function(){
   async function refreshSharedRecipes(){
     try{
       const data = await api('/api/recipes');
+      const sig = JSON.stringify(data.recipes || []);
+      // Aucune recette modifiée depuis le dernier passage : on ne touche à rien.
+      // (Avant, ce rafraîchissement toutes les 20 s redessinait le planning de
+      // repas, effaçant la saisie en cours, et relançait une sauvegarde.)
+      if(sig === lastRecipesSig) return;
+      lastRecipesSig = sig;
       customRecipes = data.recipes || [];
       recipesByNameIndex = null;
-      if(typeof renderMyRecipesList === 'function') renderMyRecipesList();
-      renderAdminPanel();
-      if(typeof refreshAllRecipeViews === 'function') refreshAllRecipeViews();
-      // Une case du planning de repas peut référencer une recette personnelle
-      // qui n'était pas encore chargée au moment du dernier rendu : on
-      // redessine à chaque rafraîchissement des recettes pour que ces cases
-      // se corrigent d'elles-mêmes dès que la recette devient disponible.
-      if(typeof renderMealPlanner === 'function') renderMealPlanner();
+      // Redessin déclenché par le serveur, pas par l'utilisateur : pas de sauvegarde en retour.
+      const prevApplying = applyingRemoteState;
+      applyingRemoteState = true;
+      try{
+        if(typeof renderMyRecipesList === 'function') renderMyRecipesList();
+        renderAdminPanel();
+        if(typeof refreshAllRecipeViews === 'function') refreshAllRecipeViews();
+        if(typeof renderMealPlanner === 'function') renderMealPlanner();
+      } finally { applyingRemoteState = prevApplying; }
     }catch(err){ console.warn('MonCoach — Groupe : lecture des recettes partagées impossible.', err); }
   }
   // Corrections des recettes pré-chargées : lecture publique (pas besoin
@@ -6021,6 +6051,7 @@ document.getElementById('loadDataInput').addEventListener('change', function(){
     currentUid = user.uid;
     currentName = user.name || '';
     setConnectedUI(currentName);
+    lastGroupSig = null; lastRecipesSig = null;
     await refreshGroupData();
     await refreshSharedRecipes();
     startGroupPolling();
@@ -6119,6 +6150,7 @@ document.getElementById('loadDataInput').addEventListener('change', function(){
     currentName = null;
     setDisconnectedUI();
     stopGroupPolling();
+    lastGroupSig = null; lastRecipesSig = null;
     membersCache = {};
     streaksCache = {};
     renderGroupLeaderboard();
